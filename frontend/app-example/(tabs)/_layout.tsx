@@ -15,6 +15,7 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
+      <Tabs.Screen name="start_page" />
       <Tabs.Screen
         name="index"
         options={{
