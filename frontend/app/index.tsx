@@ -1,15 +1,38 @@
+import HomeScreen from "../components/HomeScreen";
 import { Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
+import { useCallback } from "react";
+import * as SplashScreen from "expo-splash-screen";
+
+import "../global.css"
+
+SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
+  const [fontsLoaded, fontError] = useFonts({
+    "helvitica-light": require("../assets/fonts/helvitica/HelveticaNeueLight.otf"),
+    "helvitica-thin": require("../assets/fonts/helvitica/HelveticaNeueThin.otf"),
+    "helvitica-medium": require("../assets/fonts/helvitica/HelveticaNeueMedium.otf"),
+    "helvitica-bold": require("../assets/fonts/helvitica/HelveticaNeueBold.otf"),
+    "Raleway-Regular": require("../assets/fonts/raleway/Raleway-Regular.ttf"),
+    "Raleway-Medium": require("../assets/fonts/raleway/Raleway-Medium.ttf"),
+    "Raleway-SemiBold": require("../assets/fonts/raleway/Raleway-SemiBold.ttf"),
+    "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
+    <SafeAreaProvider  onLayout={onLayoutRootView}>
+      <HomeScreen />
+    </SafeAreaProvider>
   );
 }
