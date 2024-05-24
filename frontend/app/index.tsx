@@ -1,11 +1,12 @@
-import HomeScreen from "../components/HomeScreen";
-import { Text, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { useCallback } from "react";
 import * as SplashScreen from "expo-splash-screen";
+import { useCallback } from "react";
+import "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import "../global.css"
+import "../global.css";
+import AuthNavigator from "./navigations/AuthNavigator";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,9 +31,12 @@ export default function Index() {
   if (!fontsLoaded && !fontError) {
     return null;
   }
+  
   return (
-    <SafeAreaProvider  onLayout={onLayoutRootView}>
-      <HomeScreen />
+    <SafeAreaProvider onLayout={onLayoutRootView}>
+      <NavigationContainer independent={true}>
+        <AuthNavigator/>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
