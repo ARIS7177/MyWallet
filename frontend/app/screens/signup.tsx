@@ -39,7 +39,7 @@ const signUpSchema = z
 
 type DataForm = z.infer<typeof signUpSchema>;
 
-export default function Signup() {
+export default function Signup({ navigation }: any) {
   const [name, setName] = useState("");
   const [firstname, setFirstname] = useState("");
   const [phone, setPhone] = useState("");
@@ -172,7 +172,7 @@ export default function Signup() {
                       isIcon={true}
                       value={value}
                       errorMessage={errors.motdepasse?.message}
-                      iconStyle="absolute right-3 bottom-4"
+                      iconStyle="absolute right-1 bottom-1 p-2 "
                     />
                   )}
                 />
@@ -190,7 +190,7 @@ export default function Signup() {
                       isIcon={true}
                       value={value}
                       errorMessage={errors.confirmPassword?.message}
-                      iconStyle=" absolute right-3 bottom-4"
+                      iconStyle=" absolute right-1 bottom-1 p-2 "
                     />
                   )}
                 />
@@ -212,8 +212,9 @@ export default function Signup() {
                   title="Se connecter"
                   theme="secondary"
                   styleText="text-primary-600 px-0 py-0 text-sm"
-                  className=" px-0 pt-[6px]"
+                  className=" px-0 "
                   isSocialButton={false}
+                  onPress={() => navigation.navigate("login")}
                 />
               </View>
             </View>
@@ -228,9 +229,24 @@ export default function Signup() {
             <View className="right_line border-b flex-1 border-b-gray-400"></View>
           </View>
           <View className="social_media flex-row justify-center gap-4 items-center">
-            <Button title="google" theme="icon" isSocialButton />
-            <Button title="facebook" theme="icon" isSocialButton />
-            <Button title="linkedin" theme="icon" isSocialButton />
+            <Button
+              title="google"
+              theme="icon"
+              isSocialButton
+              styleText="px-7"
+            />
+            <Button
+              title="facebook"
+              theme="icon"
+              isSocialButton
+              styleText="px-7"
+            />
+            <Button
+              title="linkedin"
+              theme="icon"
+              isSocialButton
+              styleText="px-7"
+            />
           </View>
         </View>
       </TouchableWithoutFeedback>

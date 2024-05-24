@@ -47,7 +47,8 @@ export default function Button({
         <Text
           className={clsx(
             styleText,
-            " font-helvitica-bold text-2xl py-3 px-7 items-center"
+            "font-helvitica-bold text-2xl py-3 items-center",
+            styleText
           )}
         >
           {isSocialButton ? (

@@ -33,13 +33,25 @@ export default function App({ navigation }: any) {
         </Text>
       </View>
 
-      <View className="buttons flex-1 m-auto flex-row  justify-center gap-10 px-4  w-full">
-        <Button theme="primary" styleText="text-white" title="Se connecter" />
-        <Button
-          theme="default"
-          title="S'inscrire"
-          onPress={() => navigation.navigate("S'enregistrer")}
-        />
+      <View className="buttons flex-row  justify-between gap-5  px-4  w-full">
+        <View className="primary flex-1">
+          <Button
+            className="w-full"
+            theme="primary"
+            styleText="text-white px-7"
+            title="Se connecter"
+            onPress={() => navigation.navigate("login")}
+          />
+        </View>
+        <View className="secondary flex-1">
+          <Button
+            className="w-full"
+            theme="default"
+            title="S'inscrire"
+            styleText="px-7"
+            onPress={() => navigation.navigate("S'enregistrer")}
+          />
+        </View>
       </View>
     </View>
   );
