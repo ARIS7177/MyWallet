@@ -3,6 +3,7 @@ import HomeScreen from "../screens/HomeScreen";
 import Signup from "../screens/signup";
 import { View } from "react-native";
 import Login from "../screens/login";
+import ForgetPassword from "../screens/forgetPassword";
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,8 @@ function AuthNavigator() {
         component={Login}
         options={{ headerShown: false }}
       />
+
+      <Stack.Screen name="Mot de passe oublie" component={ForgetPassword} />
     </Stack.Navigator>
   );
 }

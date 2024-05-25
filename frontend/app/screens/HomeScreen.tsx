@@ -7,9 +7,9 @@ export default function App({ navigation }: any) {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className=" flex-1 items-center gap-20"
+      className=" flex-1 items-center gap-20  justify-between mb-10"
     >
-      <View className="images  p-0 relative w-full">
+      <View className="images  p-0 relative w-full ">
         <Image
           className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
           source={require("../../assets/images/Ellipse.png")}

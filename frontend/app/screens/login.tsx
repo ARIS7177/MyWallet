@@ -96,6 +96,7 @@ export default function Login({ navigation }: any) {
                 isSocialButton={false}
                 styleText="text-sm text-primary-600 self-end px-0"
                 className=" px-0"
+                onPress={() => navigation.navigate("Mot de passe oublie")}
               />
             </View>
           </View>
