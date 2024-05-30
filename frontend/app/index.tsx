@@ -4,12 +4,15 @@ import * as SplashScreen from "expo-splash-screen";
 import { useCallback } from "react";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import "react-native-gesture-handler";
+import { enableScreens } from "react-native-screens";
 
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 
 SplashScreen.preventAutoHideAsync();
 
+enableScreens();
 export default function Index() {
   const [fontsLoaded, fontError] = useFonts({
     "helvitica-light": require("../assets/fonts/helvitica/HelveticaNeueLight.otf"),
@@ -31,11 +34,11 @@ export default function Index() {
   if (!fontsLoaded && !fontError) {
     return null;
   }
-  
+
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
-        <AuthNavigator/>
+        <AuthNavigator />
       </NavigationContainer>
     </SafeAreaProvider>
   );

@@ -117,7 +117,7 @@ export default function Login({ navigation }: any) {
                 title="S'inscrire"
                 theme="secondary"
                 styleText="text-primary-600 px-0 py-0 text-sm"
-                className=" px-0 "
+                className=" pt-2 "
                 isSocialButton={false}
                 onPress={() => navigation.navigate("S'enregistrer")}
               />

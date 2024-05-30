@@ -57,6 +57,14 @@ export default function Signup({ navigation }: any) {
   });
   const onSubmit = (data: DataForm) => {
     console.log(data);
+    navigation.navigate("Verification", {
+      name: data.nom,
+      firstname: data.prenom,
+      phone: data.phone,
+      birthday: data.datenaissance,
+      statut: data.statut,
+      password: data.motdepasse,
+    });
     // Logique de soumission du formulaire
   };
   return (
@@ -83,7 +91,7 @@ export default function Signup({ navigation }: any) {
                   name="nom"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <InputComponent
-                      type="nom"
+                      type="default"
                       placeholder="Nom"
                       onChangeText={onChange}
                       secureTextEntry={false}
@@ -100,7 +108,7 @@ export default function Signup({ navigation }: any) {
                   name="prenom"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <InputComponent
-                      type="prenom"
+                      type="default"
                       placeholder="Prénom"
                       onChangeText={onChange}
                       secureTextEntry={false}
@@ -147,7 +155,7 @@ export default function Signup({ navigation }: any) {
               name="statut"
               render={({ field: { onChange, onBlur, value } }) => (
                 <InputComponent
-                  type="nom"
+                  type="default"
                   placeholder="Statut professionnel"
                   onChangeText={onChange}
                   secureTextEntry={false}
@@ -212,7 +220,7 @@ export default function Signup({ navigation }: any) {
                   title="Se connecter"
                   theme="secondary"
                   styleText="text-primary-600 px-0 py-0 text-sm"
-                  className=" px-0 "
+                  className=" pt-2 "
                   isSocialButton={false}
                   onPress={() => navigation.navigate("login")}
                 />
