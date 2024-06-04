@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFC400',
     margin:10,
     height:'3%',
-    width :200,
+    width :150,
    
   },
 });
