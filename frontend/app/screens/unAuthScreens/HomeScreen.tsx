@@ -1,6 +1,6 @@
 import { Image, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Button from "../../components/Button";
+import Button from "../../../components/Button";
 
 export default function App({ navigation }: any) {
   const insets = useSafeAreaInsets();
@@ -12,12 +12,12 @@ export default function App({ navigation }: any) {
       <View className="images  p-0 relative w-full ">
         <Image
           className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-          source={require("../../assets/images/Ellipse.png")}
+          source={require("../../../assets/images/Ellipse.png")}
           resizeMode="cover"
         />
         <Image
           className=" w-full"
-          source={require("../../assets/images/woment_coin.png")}
+          source={require("../../../assets/images/woment_coin.png")}
         />
       </View>
 

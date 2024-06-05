@@ -1,7 +1,7 @@
-import Budget from "@/app/screens/createScreen/budget";
-import Category from "@/app/screens/createScreen/createCategory";
-import Income from "@/app/screens/createScreen/income";
-import Spend from "@/app/screens/createScreen/spend";
+import Budget from "@/app/screens/authScreens/createScreen/budget";
+import Category from "@/app/screens/authScreens/createScreen/createCategory";
+import Income from "@/app/screens/authScreens/createScreen/income";
+import Spend from "@/app/screens/authScreens/createScreen/spend";
 import React from "react";
 import { StyleSheet, View, Text } from "react-native";
 

@@ -1,11 +1,11 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/Ionicons";
-import HomePage from "../screens/homePage";
-import Transaction from "../screens/transaction";
-import CreatePage from "../screens/createPage";
-import Stats from "../screens/stats";
-import Setting from "../screens/setting";
+import HomePage from "../screens/authScreens/homePage";
+import Transaction from "../screens/authScreens/transaction";
+import CreatePage from "../screens/authScreens/createPage";
+import Stats from "../screens/authScreens/stats";
+import Setting from "../screens/authScreens/setting";
 
 const Tab = createBottomTabNavigator();
 export type RootTabParamList = {

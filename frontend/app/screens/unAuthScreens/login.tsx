@@ -18,8 +18,8 @@ import { doc, getDoc } from "firebase/firestore";
 import bcrypt from "react-native-bcrypt";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootTabParamList } from "../navigations/Tabnavigator";
-import { RootStackParamList } from "../navigations/AuthNavigator";
+import { RootTabParamList } from "../../navigations/Tabnavigator";
+import { RootStackParamList } from "../../navigations/AuthNavigator";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -80,12 +80,12 @@ export default function Login() {
         <View className="images  p-0 relative w-full -mt-10">
           <Image
             className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-            source={require("../../assets/images/Ellipse.png")}
+            source={require("../../../assets/images/Ellipse.png")}
             resizeMode="cover"
           />
           <Image
             className=" w-full"
-            source={require("../../assets/images/women_seat.png")}
+            source={require("../../../assets/images/women_seat.png")}
           />
         </View>
         <View className="container_body gap-5">

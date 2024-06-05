@@ -1,45 +1,45 @@
 import React from "react";
 import { StyleSheet, View, Text } from "react-native";
-import Button from "../../../components/Button";
+import Button from "../../../../components/Button";
 import * as zod from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputComponent from "../../../components/inputComponent";
+import InputComponent from "../../../../components/inputComponent";
 
-const incomeSchema = zod.object({
-  source: zod.string().min(1, "entrer la source de vos revenues svp"),
+const spendSchema = zod.object({
+  description: zod.string().min(1, "entrer la raison de la depense"),
   montant: zod.coerce.number(),
 });
-type incomeData = zod.infer<typeof incomeSchema>;
-const Income = () => {
+type spendData = zod.infer<typeof spendSchema>;
+const Spend = () => {
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<incomeData>({
-    resolver: zodResolver(incomeSchema),
+  } = useForm<spendData>({
+    resolver: zodResolver(spendSchema),
   });
 
-  const onSubmit = (data: incomeData) => {
+  const onSubmit = (data: spendData) => {
     console.log("data", data);
   };
   return (
     <View className="containers w-full  px-4">
       <Text className="text-center font-helvitica-bold text-2xl w-full">
-        Creer une nouvelle source de revenue
+        Creer une nouvelle depense
       </Text>
       <View className="inputs w-full gap-4">
         <View className="desc gap-3 w-full">
           <Text className=" text-russian-950 text-lg font-raleway-medium">
-            Source
+            Description
           </Text>
           <Controller
             control={control}
-            name="source"
+            name="description"
             render={({ field: { onChange, onBlur, value } }) => (
               <InputComponent
                 type="default"
-                placeholder="Entrer un source"
+                placeholder="Entrer un description"
                 onChangeText={onChange}
                 isIcon={false}
                 className=""
@@ -71,4 +71,4 @@ const Income = () => {
 
 const styles = StyleSheet.create({});
 
-export default Income;
+export default Spend;

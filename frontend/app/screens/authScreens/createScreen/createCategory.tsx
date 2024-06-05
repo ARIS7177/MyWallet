@@ -1,10 +1,10 @@
 import React from "react";
 import { StyleSheet, View, Text } from "react-native";
-import Button from "../../../components/Button";
+import Button from "../../../../components/Button";
 import * as zod from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputComponent from "../../../components/inputComponent";
+import InputComponent from "../../../../components/inputComponent";
 
 const categorySchema = zod.object({
   categorie: zod.string().min(1, "entrer une categorie personalisée"),

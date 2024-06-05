@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
-import { RootStackParamList } from "../navigations/AuthNavigator";
+import { RootStackParamList } from "../../navigations/AuthNavigator";
 import Button from "@/components/Button";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import bcrypt from "react-native-bcrypt";
@@ -142,12 +142,12 @@ export default function OtpVerification() {
         <View className="images  p-0 relative w-full ">
           <Image
             className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-            source={require("../../assets/images/Ellipse.png")}
+            source={require("../../../assets/images/Ellipse.png")}
             resizeMode="cover"
           />
           <Image
             className=" w-full"
-            source={require("../../assets/images/verification.png")}
+            source={require("../../../assets/images/verification.png")}
             resizeMode="cover"
           />
         </View>

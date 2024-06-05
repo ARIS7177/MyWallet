@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../navigations/AuthNavigator";
+import { RootStackParamList } from "../../navigations/AuthNavigator";
 import {
   View,
   Image,
@@ -22,6 +22,7 @@ const PhoneSchema = zod.object({
 type FormData = zod.infer<typeof PhoneSchema>;
 
 export default function ForgetPassword() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {
     control,
     handleSubmit,
@@ -33,7 +34,7 @@ export default function ForgetPassword() {
 
     // Logique de soumission du formulaire
   };
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   return (
     <ScrollView className="w-full">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} className="flex-1">
@@ -41,12 +42,12 @@ export default function ForgetPassword() {
           <View className="images  p-0 relative w-full ">
             <Image
               className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-              source={require("../../assets/images/Ellipse.png")}
+              source={require("../../../assets/images/Ellipse.png")}
               resizeMode="cover"
             />
             <Image
               className=" w-full"
-              source={require("../../assets/images/Forgot password-bro.png")}
+              source={require("../../../assets/images/Forgot password-bro.png")}
             />
           </View>
           <View className="body gap-10 p-4 ">
