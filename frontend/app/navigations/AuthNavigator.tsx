@@ -47,7 +47,7 @@ const Tab = createBottomTabNavigator<RootStackParamList>();
 
 function AuthNavigator() {
   return (
-    <Stack.Navigator initialRouteName="TabNavigator">
+    <Stack.Navigator initialRouteName="Bienvenue">
       <Stack.Screen
         name="S'enregistrer"
         component={Signup}

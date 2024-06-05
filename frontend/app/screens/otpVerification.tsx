@@ -1,46 +1,132 @@
-import Button from "@/components/Button";
-// import { FIREBASE_BD } from "@/firebaseConfig";
-import auth from "@react-native-firebase/auth";
-import { RouteProp, useRoute } from "@react-navigation/native";
-// import { addDoc, collection } from "firebase/firestore";
-import React, { useState } from "react";
-import { Alert, Image, ScrollView, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { addDoc, collection } from "firebase/firestore";
+import { Image, ScrollView, Text, View, Alert } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
 import { RootStackParamList } from "../navigations/AuthNavigator";
+import Button from "@/components/Button";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import bcrypt from "react-native-bcrypt";
+import {
+  FIREBASE_APP,
+  FIREBASE_BD,
+  PhoneAuthProvider,
+  FirebaseRecaptchaVerifierModal,
+  auth,
+  signInWithCredential,
+} from "@/firebaseConfig";
+
 type optVerification = RouteProp<RootStackParamList, "Verification">;
 
 export default function OtpVerification({ navigation }: any) {
   const route = useRoute<optVerification>();
-  const { verificationId, name, firstname, phone, birthday, statut, password } =
-    route.params;
+  const { name, firstname, phone, birthday, statut, password } = route.params;
 
+  const recaptchaVerifier = useRef(null);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
-  // const confirmCode = async () => {
-  //   try {
-  //     const credential = auth.PhoneAuthProvider.credential(
-  //       verificationId,
-  //       verificationCode
-  //     );
-  //     const userCredential = await auth().signInWithCredential(credential);
+  const [codeSent, setCodeSent] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-  //     //save userdata in fireStore
-  //     await addDoc(collection(FIREBASE_BD, "Users"), {
-  //       nom: name,
-  //       prenom: firstname,
-  //       telephone: phone,
-  //       "date de naissance": birthday,
-  //       statut: statut,
-  //       "mot de passe": password,
-  //     });
-  //     Alert.alert("inscription reussie");
-  //     navigation.navigate("TabNavigator");
-  //   } catch (error: any) {
-  //     Alert.alert("une erreur est survenue:", error.message);
-  //   }
-  // };
+  useEffect(() => {
+    const sendVerificationCode = async () => {
+      setLoading(true);
+      try {
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const id = await phoneProvider.verifyPhoneNumber(
+          `+237${phone}`,
+          recaptchaVerifier.current!
+        );
+        setVerificationId(id);
+        setCodeSent(true);
+        Alert.alert("Succès", "Le code a été envoyé avec succès !");
+        setLoading(false);
+      } catch (error: any) {
+        console.error("Erreur lors de l'envoi du code:", error);
+        setError(`Error: ${error.message}`);
+        Alert.alert(
+          "Erreur",
+          `Erreur lors de l'envoi du code: ${error.message}`
+        );
+      }
+    };
+
+    sendVerificationCode();
+  }, [phone]);
+  console.log("verificationId: ", verificationId);
+  const confirmCode = async () => {
+    setLoading(true);
+    try {
+      if (verificationId) {
+        const credential = PhoneAuthProvider.credential(
+          verificationId,
+          verificationCode
+        );
+        // Vérifiez le type du mot de passe
+        if (typeof password !== "string") {
+          throw new Error("Invalid password type");
+        }
+        // Hashing the password before storing it
+        let salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        console.log("hashedPassword", typeof hashedPassword);
+        // Vérifiez si hashedPassword est une chaîne de caractères
+        if (typeof hashedPassword !== "string") {
+          throw new Error(
+            "Le mot de passe haché n'est pas une chaîne de caractères"
+          );
+        }
+        await signInWithCredential(auth, credential);
+        await addDoc(collection(FIREBASE_BD, "users"), {
+          name,
+          firstname,
+          phone,
+          birthday,
+          statut,
+          password: hashedPassword,
+        });
+        setLoading(false);
+        navigation.navigate("TabNavigator");
+      }
+    } catch (error: any) {
+      console.error("Erreur lors de la confirmation du code:", error);
+      setError(`Error: ${error.message}`);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de la confirmation du code: ${error.message}`
+      );
+    }
+  };
+
+  const resendCode = async () => {
+    setLoading(true);
+    setError(null); // Clear any previous error
+    try {
+      const phoneProvider = new PhoneAuthProvider(auth);
+      const id = await phoneProvider.verifyPhoneNumber(
+        `+237${phone}`,
+        recaptchaVerifier.current!
+      );
+      setLoading(false);
+      setVerificationId(id);
+      Alert.alert("Succès", "Le code a été renvoyé avec succès !");
+    } catch (error: any) {
+      console.error("Erreur lors de la réexpédition du code:", error);
+      setError(`Error: ${error.message}`);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de la réexpédition du code: ${error.message}`
+      );
+    }
+  };
+
   return (
     <ScrollView>
       <View className="containerflex-1  gap-10">
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={FIREBASE_APP.options}
+        />
         <View className="images  p-0 relative w-full ">
           <Image
             className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
@@ -58,8 +144,8 @@ export default function OtpVerification({ navigation }: any) {
             Verifier votre numero de téléphone
           </Text>
           <Text className="sub_title text-center  text-lg font-raleway">
-            Nous avons envoyer un code au numero{" "}
-            <Text className=" font-raleway-bold">{phone}</Text> , Entrer le code
+            Nous avons envoyé un code au numéro{" "}
+            <Text className=" font-raleway-bold">{phone}</Text> , Entrez le code
             ci-dessous
           </Text>
         </View>
@@ -67,8 +153,7 @@ export default function OtpVerification({ navigation }: any) {
           numberOfDigits={6}
           focusColor="#FFC400"
           focusStickBlinkingDuration={500}
-          //   onTextChange={(text) => console.log(text)}
-          onFilled={(text) => console.log(`OTP is ${text}`)}
+          onFilled={(text) => setVerificationCode(text)}
           textInputProps={{
             accessibilityLabel: "One-Time Password",
           }}
@@ -86,20 +171,22 @@ export default function OtpVerification({ navigation }: any) {
         />
         <View className="buttons px-4 mt-20">
           <Button
-            title="S'incrire"
+            title="S'inscrire"
             theme="primary"
             styleText="text-white"
-            // onPress={confirmCode}
+            onPress={confirmCode}
           />
+          {error && <Text className=" text-red-500">{error}</Text>}
           <View className="resend flex-row items-center justify-end gap-1">
             <Text className=" text-gray-400 font-raleway">
-              Vous ne trouvez pas de codel?
+              Vous ne trouvez pas de code?
             </Text>
             <Button
               title="Renvoyer"
               theme="secondary"
               styleText=" text-primary-600 text-sm"
               className="pt-1"
+              onPress={resendCode}
             />
           </View>
         </View>

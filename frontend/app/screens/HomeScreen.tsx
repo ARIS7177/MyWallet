@@ -7,7 +7,7 @@ export default function App({ navigation }: any) {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className=" flex-1 items-center gap-20  justify-between mb-10"
+      className=" flex-1 items-center gap-10  justify-between mb-10"
     >
       <View className="images  p-0 relative w-full ">
         <Image
@@ -36,19 +36,19 @@ export default function App({ navigation }: any) {
       <View className="buttons flex-row  justify-between gap-5  px-4  w-full">
         <View className="primary flex-1">
           <Button
-            className="w-full"
+            className="w-full font-helvitica-bold"
             theme="primary"
-            styleText="text-white px-7"
+            styleText="text-white px-7 text-lg"
             title="Se connecter"
             onPress={() => navigation.navigate("login")}
           />
         </View>
         <View className="secondary flex-1">
           <Button
-            className="w-full"
+            className="w-full justify-center"
             theme="default"
             title="S'inscrire"
-            styleText="px-7"
+            styleText="px-7 text-lg"
             onPress={() => navigation.navigate("S'enregistrer")}
           />
         </View>

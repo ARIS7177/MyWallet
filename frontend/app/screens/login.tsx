@@ -1,10 +1,13 @@
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
+import { FIREBASE_BD, auth } from "@/firebaseConfig";
+import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View, Image, Text } from "react-native";
 import * as z from "zod";
+import { doc, getDoc } from "firebase/firestore";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -17,7 +20,7 @@ type DataForm = z.infer<typeof signInSchema>;
 
 export default function Login({ navigation }: any) {
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const {
     control,
     handleSubmit,
@@ -29,6 +32,16 @@ export default function Login({ navigation }: any) {
     console.log(data);
     // Logique de soumission du formulaire
   };
+
+  const handleLogin = async () => {
+    try {
+      const userDoc = await getDoc(doc(FIREBASE_BD, "users", phone));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+      }
+    } catch (error) {}
+  };
+
   return (
     <ScrollView>
       <View className="container">

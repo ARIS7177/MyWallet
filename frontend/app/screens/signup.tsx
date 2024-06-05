@@ -1,19 +1,16 @@
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RecaptchaVerifier, getAuth } from "firebase/auth";
 import React, { useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Platform,
   Keyboard,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import * as z from "zod";
 
@@ -56,7 +53,7 @@ export default function Signup({ navigation }: any) {
     resolver: zodResolver(signUpSchema),
   });
   const onSubmit = (data: DataForm) => {
-    console.log(data);
+    console.log(data, typeof password);
     navigation.navigate("Verification", {
       name: data.nom,
       firstname: data.prenom,
@@ -65,8 +62,8 @@ export default function Signup({ navigation }: any) {
       statut: data.statut,
       password: data.motdepasse,
     });
-    // Logique de soumission du formulaire
   };
+
   return (
     <ScrollView>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
