@@ -8,6 +8,14 @@ import Stats from "../screens/stats";
 import Setting from "../screens/setting";
 
 const Tab = createBottomTabNavigator();
+export type RootTabParamList = {
+  home: undefined;
+  transaction: undefined;
+  categorie: undefined;
+  creer: undefined;
+  stat: undefined;
+  parametre: undefined;
+};
 
 function TabNavigator() {
   return (
@@ -52,16 +60,16 @@ function TabNavigator() {
       <Tab.Screen name="home" component={HomePage} />
       <Tab.Screen name="transaction" component={Transaction} />
       <Tab.Screen
-        name="create"
+        name="creer"
         component={CreatePage}
         options={{
           title: "Creer un nouveau status",
           headerTitleAlign: "center",
         }}
       />
-      <Tab.Screen name="category" component={Stats} />
+      <Tab.Screen name="categorie" component={Stats} />
       <Tab.Screen name="stat" component={Stats} />
-      <Tab.Screen name="setting" component={Setting} />
+      <Tab.Screen name="parametre" component={Setting} />
     </Tab.Navigator>
   );
 }

@@ -5,9 +5,21 @@ import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View, Image, Text } from "react-native";
+import {
+  ScrollView,
+  View,
+  Image,
+  Text,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import * as z from "zod";
 import { doc, getDoc } from "firebase/firestore";
+import bcrypt from "react-native-bcrypt";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootTabParamList } from "../navigations/Tabnavigator";
+import { RootStackParamList } from "../navigations/AuthNavigator";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -17,10 +29,12 @@ const signInSchema = z.object({
 });
 
 type DataForm = z.infer<typeof signInSchema>;
+type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
 
-export default function Login({ navigation }: any) {
-  const [phone, setPhone] = useState("");
+export default function Login() {
+  const navigation2 = useNavigation<AuthNavigationPropsStack>();
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -28,18 +42,36 @@ export default function Login({ navigation }: any) {
   } = useForm<DataForm>({
     resolver: zodResolver(signInSchema),
   });
-  const onSubmit = (data: DataForm) => {
-    console.log(data);
-    // Logique de soumission du formulaire
-  };
 
-  const handleLogin = async () => {
+  const handleLogin = async (data: DataForm) => {
+    console.log(data);
     try {
-      const userDoc = await getDoc(doc(FIREBASE_BD, "users", phone));
+      setLoading(true);
+      // Récupérez le document utilisateur à partir de Firestore en utilisant le numéro de téléphone
+      const userDoc = await getDoc(
+        doc(FIREBASE_BD, "users", `+237${data.phone}`)
+      );
       if (userDoc.exists()) {
+        setLoading(false);
         const userData = userDoc.data();
+        // Vérifiez le mot de passe haché
+        const passwordMatch = bcrypt.compareSync(
+          data.motdepasse,
+          userData.password
+        );
+        if (passwordMatch) {
+          navigation2.navigate("Main", { screen: "home" });
+        } else {
+          Alert.alert("Erreur", "Mot de passe incorect.");
+        }
+      } else {
+        Alert.alert("Erreur", "L'utilisateur est introuvable");
+        setLoading(false);
       }
-    } catch (error) {}
+    } catch (error: any) {
+      Alert.alert("Erreur", error.message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,18 +141,24 @@ export default function Login({ navigation }: any) {
                 isSocialButton={false}
                 styleText="text-sm text-primary-600 self-end px-0"
                 className=" px-0"
-                onPress={() => navigation.navigate("Mot de passe oublie")}
+                onPress={() => navigation2.navigate("Mot de passe oublie")}
               />
             </View>
           </View>
 
           <View className="button  px-4">
             <Button
-              title="Se connecter"
+              title={
+                loading ? (
+                  <ActivityIndicator size={"large"} color={"#e29800"} />
+                ) : (
+                  "Se connecter"
+                )
+              }
               theme="primary"
               className=" justify-center items-center"
               styleText="text-white"
-              onPress={handleSubmit(onSubmit)}
+              onPress={handleSubmit(handleLogin)}
             />
             <View className="login flex-row  items-center justify-end ">
               <Text className=" text-gray-500 font-raleway text-sm">
@@ -132,7 +170,7 @@ export default function Login({ navigation }: any) {
                 styleText="text-primary-600 px-0 py-0 text-sm"
                 className=" pt-2 "
                 isSocialButton={false}
-                onPress={() => navigation.navigate("S'enregistrer")}
+                onPress={() => navigation2.navigate("S'enregistrer")}
               />
             </View>
           </View>

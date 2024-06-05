@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
-import { Image, ScrollView, Text, View, Alert } from "react-native";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import {
+  Image,
+  ScrollView,
+  Text,
+  View,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { OtpInput } from "react-native-otp-entry";
 import { RootStackParamList } from "../navigations/AuthNavigator";
 import Button from "@/components/Button";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import bcrypt from "react-native-bcrypt";
 import {
   FIREBASE_APP,
@@ -14,10 +21,12 @@ import {
   auth,
   signInWithCredential,
 } from "@/firebaseConfig";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 type optVerification = RouteProp<RootStackParamList, "Verification">;
-
-export default function OtpVerification({ navigation }: any) {
+type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
+export default function OtpVerification() {
+  const navigation = useNavigation<AuthNavigationPropsStack>();
   const route = useRoute<optVerification>();
   const { name, firstname, phone, birthday, statut, password } = route.params;
 
@@ -44,6 +53,7 @@ export default function OtpVerification({ navigation }: any) {
       } catch (error: any) {
         console.error("Erreur lors de l'envoi du code:", error);
         setError(`Error: ${error.message}`);
+        setLoading(false);
         Alert.alert(
           "Erreur",
           `Erreur lors de l'envoi du code: ${error.message}`
@@ -54,6 +64,7 @@ export default function OtpVerification({ navigation }: any) {
     sendVerificationCode();
   }, [phone]);
   console.log("verificationId: ", verificationId);
+
   const confirmCode = async () => {
     setLoading(true);
     try {
@@ -76,19 +87,20 @@ export default function OtpVerification({ navigation }: any) {
             "Le mot de passe haché n'est pas une chaîne de caractères"
           );
         }
+        setLoading(true);
         await signInWithCredential(auth, credential);
-        await addDoc(collection(FIREBASE_BD, "users"), {
+        await setDoc(doc(FIREBASE_BD, "users", `+237${phone}`), {
           name,
           firstname,
-          phone,
+          phone: `+237${phone}`,
           birthday,
           statut,
           password: hashedPassword,
         });
-        setLoading(false);
-        navigation.navigate("TabNavigator");
+        navigation.navigate("Main", { screen: "creer" });
       }
     } catch (error: any) {
+      setLoading(false);
       console.error("Erreur lors de la confirmation du code:", error);
       setError(`Error: ${error.message}`);
       Alert.alert(
@@ -171,7 +183,13 @@ export default function OtpVerification({ navigation }: any) {
         />
         <View className="buttons px-4 mt-20">
           <Button
-            title="S'inscrire"
+            title={
+              loading ? (
+                <ActivityIndicator size={"large"} color={"#fff"} />
+              ) : (
+                "S'inscrire"
+              )
+            }
             theme="primary"
             styleText="text-white"
             onPress={confirmCode}

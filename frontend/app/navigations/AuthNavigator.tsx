@@ -13,7 +13,8 @@ import Transaction from "../screens/transaction";
 import CreatePage from "../screens/createPage";
 import Stats from "../screens/stats";
 import Setting from "../screens/setting";
-import TabNavigator from "./Tabnavigator";
+import TabNavigator, { RootTabParamList } from "./Tabnavigator";
+import { NavigatorScreenParams } from "@react-navigation/native";
 
 export type RootStackParamList = {
   ForgetPassword: undefined;
@@ -39,7 +40,7 @@ export type RootStackParamList = {
     password: string;
     verificationId: any;
   };
-  TabNavigator: undefined;
+  Main: NavigatorScreenParams<RootTabParamList>;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -68,7 +69,7 @@ function AuthNavigator() {
       <Stack.Screen name="Ouvrir sms" component={ReceiveSms} />
       <Stack.Screen name="Verification" component={OtpVerification} />
       <Stack.Screen
-        name="TabNavigator"
+        name="Main"
         component={TabNavigator}
         options={{ headerShown: false }}
       />

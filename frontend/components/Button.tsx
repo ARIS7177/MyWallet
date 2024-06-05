@@ -1,9 +1,9 @@
 interface props {
-  title: string;
+  title: string | any;
   styleText?: string;
   className?: string;
   onPress?: any;
-  theme: "default" | "primary" | "secondary" | "icon";
+  theme: "default" | "primary" | "secondary" | "icon" | "danger";
   isSocialButton?: boolean;
   isComposed?: boolean;
   isActive?: boolean;
@@ -37,6 +37,8 @@ export default function Button({
     case "icon":
       themeValue = " bg-gray-300 rounded-2xl";
       break;
+    case "danger":
+      themeValue = "bg-red-600";
   }
   const iconColors: { [key in props["title"]]: string } = {
     facebook: "#3b5998",

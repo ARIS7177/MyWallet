@@ -5,6 +5,7 @@ import { RecaptchaVerifier, getAuth } from "firebase/auth";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
+  ActivityIndicator,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -37,13 +38,7 @@ const signUpSchema = z
 type DataForm = z.infer<typeof signUpSchema>;
 
 export default function Signup({ navigation }: any) {
-  const [name, setName] = useState("");
-  const [firstname, setFirstname] = useState("");
-  const [phone, setPhone] = useState("");
-  const [formattedPhone, setFormattedPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [comfirmPassword, setConfirmPassword] = useState("");
-  const [datedenaissance, setDatenaissance] = useState("");
+  const [loading, setLoading] = useState(false);
   const phoneInputRef = useRef(null);
   const {
     control,
@@ -53,7 +48,8 @@ export default function Signup({ navigation }: any) {
     resolver: zodResolver(signUpSchema),
   });
   const onSubmit = (data: DataForm) => {
-    console.log(data, typeof password);
+    setLoading(true);
+    console.log(data, typeof data.motdepasse);
     navigation.navigate("Verification", {
       name: data.nom,
       firstname: data.prenom,
@@ -203,7 +199,13 @@ export default function Signup({ navigation }: any) {
             </View>
             <View className="button pt-5">
               <Button
-                title="S'inscrire"
+                title={
+                  loading ? (
+                    <ActivityIndicator size={"large"} color={"#fff"} />
+                  ) : (
+                    "S'inscrire"
+                  )
+                }
                 theme="primary"
                 className=" justify-center items-center"
                 styleText="text-white"

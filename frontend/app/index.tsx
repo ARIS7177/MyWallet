@@ -1,19 +1,22 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/firebaseConfig";
 
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
-
-SplashScreen.preventAutoHideAsync();
+import TabNavigator from "./navigations/Tabnavigator";
 
 enableScreens();
+
 export default function Index() {
+  const [appIsReady, setAppIsReady] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     "helvitica-light": require("../assets/fonts/helvitica/HelveticaNeueLight.otf"),
     "helvitica-thin": require("../assets/fonts/helvitica/HelveticaNeueThin.otf"),
@@ -25,20 +28,37 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        if (fontsLoaded || fontError) {
+          setAppIsReady(true);
+        }
+      }
     }
+    prepare();
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  const [user] = useAuthState(auth);
+
+  if (!appIsReady) {
     return null;
   }
 
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
-        <AuthNavigator />
+        {user ? <TabNavigator /> : <AuthNavigator />}
       </NavigationContainer>
     </SafeAreaProvider>
   );
