@@ -4,9 +4,13 @@ import Button from "@/components/Button";
 import Input from "@/components/input";
 import React, { useState } from 'react';
 import PhoneNumberInput from "../components/PhoneNumber";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm,Controller } from 'react-hook-form';
+import { z } from 'zod';
 
 
 function Motdepasseoublie({navigation}) {
+  
   
     const handlePress = () => {
       console.log('Button pressed!');
@@ -23,7 +27,23 @@ function Motdepasseoublie({navigation}) {
     const handlePhoneNumberChange = (newPhoneNumber) => {
       setPhoneNumber(newPhoneNumber);
     };
-    
+    const validationSchema = z.object({
+      phone: z.string().min(9,'Le numéro doit respecter le format a 9 chifres').max(9,'Le numéro doit respecter le format a 9 chifres'),
+      
+    });
+    type FormData = z.infer<typeof validationSchema>
+
+         
+    const { handleSubmit,control, formState: { errors } } = useForm<FormData>({
+      resolver: zodResolver(validationSchema),
+    });
+  
+    const onSubmit = (data:FormData) => {
+      console.log(data); 
+     
+       navigation.navigate('create')
+      // Faire quelque chose avec les données soumises
+    };
   return (
    
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -37,14 +57,22 @@ function Motdepasseoublie({navigation}) {
                   <Text style={styles.text}>de renitialisation de mot de passe</Text>
             </View>
 
-            <View style={styles.inputcontainer}>    
-              <PhoneNumberInput placeholder="Numero de telephone" />
+            <View style={styles.inputcontainer}>   
+            <Controller name="phone"
+            control={control}
+            // rules={{ required: true }}
+            render={({ field: { onChange} }) => ( 
+              <PhoneNumberInput  onChangeText={onChange} />
+            )}
+            />
+          
+          {errors.phone && <Text style={{color:"red"}}>{errors.phone.message}</Text>}
             </View>
 
             <View style={styles.buttoncontainer}>
                 <Button
                         title="Envoyer"
-                        onPress={handlePress}//
+                        onPress={handleSubmit(onSubmit)}//
                         style={styles.button}
                 /> 
             </View>
@@ -67,7 +95,7 @@ const styles = StyleSheet.create({
   },
   
   imagecontainer:{
-    height:'50%',
+    height:'40%',
     width:'100%',
     display:'flex',
     justifyContent:'space-between',

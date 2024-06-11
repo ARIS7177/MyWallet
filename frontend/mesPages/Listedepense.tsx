@@ -1,8 +1,9 @@
-import React,{ useState }from 'react';
-import { FlatList,View,Text,StyleSheet,TouchableOpacity, } from 'react-native';
+import React,{ useState } from 'react';
+import { FlatList,View,Text,StyleSheet,TouchableOpacity, ScrollView, KeyboardAvoidingView} from 'react-native';
 import PageSwitcher from '../components/PageSwitcher';
 import Depense from "../components/Depense";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 
 // import { } from 'react-native-reanimated/lib/typescript/Animated';
 
@@ -12,18 +13,19 @@ const Listedepense = () => {
   const FlatListItemSeparator = () => {
     return <View style={styles.separator} />;
   };
+  
   const [DATA,setData] = useState([ 
-    {jour: 'Mercredi',date: ' 29/05/2024',montant: '5000',},
-    {jour: 'jeudi',date: ' 30/05/2024', montant: '3000',},
-    {jour: 'Mercredi',date: ' 29/05/2024',montant: '5000',},
-    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', },
-    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', },
+    {jour: 'Mercredi',date: ' 29/05/2024',montant: '5000', editable: false},
+    {jour: 'jeudi',date: ' 30/05/2024', montant: '3000', editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024',montant: '5000', editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000', editable: false },
+    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000',  editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', editable: false },
+    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000',  editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000',  editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', editable: false },
+    {jour: 'Mercredi',date: ' 29/05/2024', montant: '5000',  editable: false},
+    {jour: 'Mercredi',date: ' 29/05/2024',      montant: '5000', editable: false },
        
   ]);
   
@@ -31,22 +33,27 @@ const Listedepense = () => {
 
   return (
     
-    <View style={styles.container}>
+    <ScrollView>
     
-      <FlatList
-      data={DATA}
-      renderItem={({ item }) => (
-        <Depense
-          jour={item.jour}
-          montant={item.montant}
-          date={item.date}
-          
-        />
-      )}
-      ItemSeparatorComponent={FlatListItemSeparator} 
-      showsVerticalScrollIndicator={false}
-    />
+    <View style={styles.container}>
+   
+    <KeyboardAwareFlatList
+        data={DATA}
+        renderItem={({ item }) => (
+          <Depense
+            jour={item.jour}
+            montant={item.montant}
+            date={item.date}
+            
+          />
+        )}
+        ItemSeparatorComponent={FlatListItemSeparator} 
+        showsVerticalScrollIndicator={false}
+      />
+      
     </View>
+    
+    </ScrollView>
     
   );
 };
@@ -55,8 +62,8 @@ const styles = {
       height:'110%',
       width:'100%', 
       backgroundColor:'white',
-      paddingLeft:10,
-      paddingRight:10
+      paddingHorizontal:10,
+      
     },
     separator: {
       height:8,

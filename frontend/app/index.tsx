@@ -22,7 +22,7 @@ export default function Index() {
        
       <Stack.Screen name="Revenues" component={Revenues}  options={{headerShown:false}}/>  
        
-    <Stack.Screen name="Listedepense" component={Listedepense}  options={{headerShown:false}}/>  
+    <Stack.Screen name="Listedepense" component={Listedepense}  options={{headerShown:false}}/>   
       <Stack.Screen name="Transactions" component={Transactions}  options={{headerShown:false}}/>
     </Stack.Navigator>
   </NavigationContainer> 

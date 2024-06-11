@@ -1,10 +1,15 @@
-import { Text, View,Image ,StyleSheet} from "react-native";
+import { Text, View,Image ,StyleSheet, Alert} from "react-native";
 import { useSafeAreaInsets,SafeAreaProvider } from 'react-native-safe-area-context';
 import Button from "@/components/Button";
 import Input from "@/components/input";
 import React, { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm,Controller } from 'react-hook-form';
+import { z } from 'zod';
+import PhoneInput from "react-native-phone-number-input";
+// import { red } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
 
-function CreateNewmdp() {
+function CreateNewmdp({navigation}:any) {
   
     const insets = useSafeAreaInsets();
 
@@ -18,12 +23,44 @@ function CreateNewmdp() {
       setText(newText);
     };
     const [password, setPassword] = useState('');
+    const [confirmpassword, setConfirm] = useState ('');
 
     const [phoneNumber, setPhoneNumber] = useState('');
   
-    const handlePasswordChange = (newPassword:any) => {
-      setPassword(newPassword);
-    }
+    // const handlePasswordChange = (newPassword:any) => {
+    //   setPassword(newPassword);
+    // }
+    // const handleConfirmPasswordChange = (newPassword:any) => {
+    //   setConfirm(newPassword);
+    // }
+    
+    const validationSchema = z.object({
+      password: z.string().min(6, ' Necessite au moins 6 caractères'),
+      confirm:z.string().min(6, ' Necessite au moins 6 caractères'),
+    });
+
+    type FormData = z.infer<typeof validationSchema>
+
+     
+      const { handleSubmit,control, formState: { errors } } = useForm<FormData>({
+        resolver: zodResolver(validationSchema),
+      });
+    
+      const onSubmit = (data: FormData) => {
+        if (data.password !== confirmpassword) {
+          Alert.alert('les mots de passe ne correspondent pas');// Les mots de passe ne correspondent pas
+          // Gérer le cas d'erreur ici
+          return;
+        }
+       else{
+          // Les mots de passe correspondent
+        // Effectuer les actions nécessaires avec les données soumises
+        console.log(data);
+        navigation.navigate('SeConnecter');
+       }
+        
+      };
+
     
   return (
     
@@ -37,26 +74,33 @@ function CreateNewmdp() {
             </View>
 
             <View style={styles.inputcontainer}>
-              
+            <Controller name="password"
+                control={control}
+                // rules={{ required: true }}
+                render={({ field: { onChange,value } }) => (
                 <Input
                   placeholder="Mot de passe"
-                  value={password}
-                  onChangeText={handlePasswordChange}
+                  value={value}
+                  onChangeText={onChange}
                   iconType="password"
                 />
+              )}
+              />
+                {errors.password && <Text style={{color:"red"}}>{errors.password.message}</Text>}
+                
                 <Input
                   placeholder=" Confirmer mot de passe"
-                  value={password}
-                  onChangeText={handlePasswordChange}
+                  value={confirmpassword}
+                  onChangeText={setConfirm}
                   iconType="password"
-                />
                 
+              />
             </View> 
 
             <View style={styles.buttoncontainer}>
                 <Button
                       title="Envoyer"
-                      onPress={handlePress}
+                      onPress={handleSubmit(onSubmit)}
                       style={styles.button}
                   /> 
             </View>

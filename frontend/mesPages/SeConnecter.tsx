@@ -29,7 +29,7 @@ import PhoneInput from "react-native-phone-number-input";
         const handleTextChange = (newText:any) => {
           setText(newText);
         };
-        const [password, setPassword] = useState('dfdgfd');
+        const [password, setPassword] = useState('');
         const [phoneNumber, setPhoneNumber] = useState('');
         
       
@@ -55,6 +55,7 @@ import PhoneInput from "react-native-phone-number-input";
         
           const onSubmit = (data:FormData) => {
             console.log(data); 
+           
              navigation.navigate('create')
             // Faire quelque chose avec les données soumises
           };
@@ -91,7 +92,7 @@ import PhoneInput from "react-native-phone-number-input";
               )}
                 />
               
-              {errors.phone && <Text>{errors.phone.message}</Text>}
+              {errors.phone && <Text style={{color:"red"}}>{errors.phone.message}</Text>}
 
               <Controller name="password"
                 control={control}
@@ -107,7 +108,7 @@ import PhoneInput from "react-native-phone-number-input";
               /> 
             )}
             />
-              {errors.password && <Text>{errors.password.message}</Text>}
+              {errors.password && <Text style={{color:"red"}}>{errors.password.message}</Text>}
 
             </View> 
 
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   },
 
   textcontainer:{
-    height:'12%',
+    height:'10%',
     alignItems:'center', 
   },
   
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
   },
 
   buttoncontainer:{
-    height:'18%', 
+    height:'20%', 
     width : '100%',
     alignItems:'center',
     justifyContent:'space-around',

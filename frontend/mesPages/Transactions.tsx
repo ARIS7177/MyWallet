@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlatList,View,Text,StyleSheet,TouchableOpacity, } from 'react-native';
+import { FlatList,View,Text,StyleSheet,TouchableOpacity,ScrollView, KeyboardAvoidingView } from 'react-native';
 import PageSwitcher from '../components/PageSwitcher';
 import Depense from "../components/Depense";
 import Revenues from './Revenues';
