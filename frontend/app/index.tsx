@@ -12,6 +12,7 @@ import { auth } from "@/firebaseConfig";
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
+import { PhoneProvider } from "@/lib/PhoneContext";
 
 enableScreens();
 
@@ -58,7 +59,9 @@ export default function Index() {
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
-        {user ? <TabNavigator /> : <AuthNavigator />}
+        <PhoneProvider>
+          {user ? <TabNavigator /> : <AuthNavigator />}
+        </PhoneProvider>
       </NavigationContainer>
     </SafeAreaProvider>
   );

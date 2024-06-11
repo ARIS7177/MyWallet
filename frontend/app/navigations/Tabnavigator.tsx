@@ -9,7 +9,7 @@ import Setting from "../screens/authScreens/setting";
 
 const Tab = createBottomTabNavigator();
 export type RootTabParamList = {
-  home: undefined;
+  home: { phone: string };
   transaction: undefined;
   categorie: undefined;
   creer: undefined;

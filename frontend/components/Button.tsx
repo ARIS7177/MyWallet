@@ -3,10 +3,11 @@ interface props {
   styleText?: string;
   className?: string;
   onPress?: any;
-  theme: "default" | "primary" | "secondary" | "icon" | "danger";
+  theme: "default" | "primary" | "secondary" | "icon" | "danger" | "success";
   isSocialButton?: boolean;
   isComposed?: boolean;
   isActive?: boolean;
+  disabled?: boolean;
 }
 
 import React from "react";
@@ -22,6 +23,7 @@ export default function Button({
   isSocialButton,
   isComposed = false,
   isActive = false,
+  disabled = false,
 }: props) {
   let themeValue = "";
   switch (theme) {
@@ -39,6 +41,10 @@ export default function Button({
       break;
     case "danger":
       themeValue = "bg-red-600";
+      break;
+    case "success":
+      themeValue = "bg-green-500";
+      break;
   }
   const iconColors: { [key in props["title"]]: string } = {
     facebook: "#3b5998",
@@ -47,7 +53,7 @@ export default function Button({
   };
   const iconColor = iconColors[title] || "#000";
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} disabled={disabled}>
       {isComposed ? (
         <View className="container justify-center items-center">
           <View

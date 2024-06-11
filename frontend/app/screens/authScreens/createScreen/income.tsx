@@ -40,6 +40,7 @@ const Income = () => {
               <InputComponent
                 type="default"
                 placeholder="Entrer un source"
+                value={value}
                 onChangeText={onChange}
                 isIcon={false}
                 className=""

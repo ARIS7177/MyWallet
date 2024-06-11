@@ -12,8 +12,18 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
   Keyboard,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as zod from "zod";
+import { doc, getDoc } from "firebase/firestore";
+import {
+  FIREBASE_BD,
+  FirebaseRecaptchaVerifierModal,
+  PhoneAuthProvider,
+  auth,
+  signInWithPhoneNumber,
+} from "@/firebaseConfig";
 
 const PhoneSchema = zod.object({
   phone: zod.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -28,17 +38,44 @@ export default function ForgetPassword() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(PhoneSchema) });
-  const onSubmit = (data: FormData) => {
+  const recaptchaVerifier = useRef(null);
+  const [isLoading, setLoading] = useState(false);
+  const onSubmit = async (data: FormData) => {
     console.log(data);
-    navigation.navigate("Ouvrir sms", { phone: data.phone });
-
-    // Logique de soumission du formulaire
+    try {
+      setLoading(true);
+      const userDoc = await getDoc(
+        doc(FIREBASE_BD, "users", `+237${data.phone}`)
+      );
+      if (userDoc.exists()) {
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const verificationId = await phoneProvider.verifyPhoneNumber(
+          `+237${data.phone}`,
+          recaptchaVerifier.current!
+        );
+        navigation.navigate("EntryResetCode", {
+          phone: data.phone,
+          verificationId: verificationId,
+        });
+        setLoading(false);
+      } else {
+        Alert.alert("Erreur", "L'utilisateur est introuvable");
+        setLoading(false);
+      }
+    } catch (error: any) {
+      Alert.alert("Erreur", error.message);
+      setLoading(false);
+    }
   };
 
   return (
     <ScrollView className="w-full">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} className="flex-1">
         <View className="container flex-1 h-full">
+          <FirebaseRecaptchaVerifierModal
+            ref={recaptchaVerifier}
+            firebaseConfig={auth.app.options}
+          />
           <View className="images  p-0 relative w-full ">
             <Image
               className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
@@ -53,8 +90,9 @@ export default function ForgetPassword() {
           <View className="body gap-10 p-4 ">
             <View className="text gap-10">
               <Text className="text-center px-10 font-raleway-medium">
-                Entrez votre numero d’inscription ci-dessous pour recevoir des
-                instructions de renitialisation de mot de passe
+                Merci d'entrez votre numero d’inscription ci-dessous pour
+                recevoir un code de verification afin de renitialiser votre mot
+                de passe
               </Text>
               <Controller
                 name="phone"
@@ -74,7 +112,13 @@ export default function ForgetPassword() {
             </View>
             <View className="button">
               <Button
-                title="Envoyer"
+                title={
+                  isLoading ? (
+                    <ActivityIndicator size={"large"} color={"#bb6c02"} />
+                  ) : (
+                    "Envoyer"
+                  )
+                }
                 theme="primary"
                 isSocialButton={false}
                 onPress={handleSubmit(onSubmit)}

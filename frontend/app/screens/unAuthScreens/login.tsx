@@ -1,9 +1,17 @@
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
-import { FIREBASE_BD, auth } from "@/firebaseConfig";
+import {
+  FIREBASE_APP,
+  FIREBASE_BD,
+  FirebaseRecaptchaVerifierModal,
+  PhoneAuthProvider,
+  auth,
+  signInWithCredential,
+  signInWithPhoneNumber,
+} from "@/firebaseConfig";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ScrollView,
@@ -20,6 +28,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootTabParamList } from "../../navigations/Tabnavigator";
 import { RootStackParamList } from "../../navigations/AuthNavigator";
+import { PhoneContext, usePhoneContext } from "@/lib/PhoneContext";
+import { OtpInput } from "react-native-otp-entry";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -34,7 +44,12 @@ type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
 export default function Login() {
   const navigation2 = useNavigation<AuthNavigationPropsStack>();
   const [code, setCode] = useState("");
+
+  const { setPhone } = usePhoneContext();
   const [loading, setLoading] = useState(false);
+  const recaptchaVerifier = useRef(null);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
@@ -47,6 +62,7 @@ export default function Login() {
     console.log(data);
     try {
       setLoading(true);
+      setPhone(data.phone);
       // Récupérez le document utilisateur à partir de Firestore en utilisant le numéro de téléphone
       const userDoc = await getDoc(
         doc(FIREBASE_BD, "users", `+237${data.phone}`)
@@ -60,7 +76,13 @@ export default function Login() {
           userData.password
         );
         if (passwordMatch) {
-          navigation2.navigate("Main", { screen: "home" });
+          // Step 1: Verify the phone number with reCAPTCHA
+          const phoneProvider = new PhoneAuthProvider(auth);
+          const verificationId = await phoneProvider.verifyPhoneNumber(
+            `+237${data.phone}`,
+            recaptchaVerifier.current!
+          );
+          setVerificationId(verificationId);
         } else {
           Alert.alert("Erreur", "Mot de passe incorect.");
         }
@@ -74,9 +96,46 @@ export default function Login() {
     }
   };
 
+  const confirmCode = async (data: DataForm) => {
+    try {
+      if (verificationId) {
+        // Step 2: Sign in with the verification code
+        const credential = PhoneAuthProvider.credential(
+          verificationId,
+          code // You need to get this code from the user input
+        );
+        // Step 3: Sign in the user with the credential
+        await signInWithCredential(auth, credential);
+      } else {
+        console.log("something wrong");
+      }
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          console.log("User authenticated:", user);
+          navigation2.navigate("Main", {
+            screen: "home",
+            params: { phone: data.phone },
+          });
+        } else {
+          console.log("User not authenticated");
+        }
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la confirmation du code:", error);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de la confirmation du code: ${error.message}`
+      );
+    }
+  };
+
   return (
     <ScrollView>
       <View className="container">
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={FIREBASE_APP.options}
+        />
         <View className="images  p-0 relative w-full -mt-10">
           <Image
             className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
@@ -135,13 +194,35 @@ export default function Login() {
                   />
                 )}
               />
+              {verificationId && (
+                <OtpInput
+                  numberOfDigits={6}
+                  focusColor="#FFC400"
+                  focusStickBlinkingDuration={500}
+                  onFilled={(text) => setCode(text)}
+                  textInputProps={{
+                    accessibilityLabel: "One-Time Password",
+                  }}
+                  theme={{
+                    containerStyle: {
+                      paddingHorizontal: 20,
+                    },
+                    pinCodeContainerStyle: {
+                      width: 58,
+                      height: 58,
+                      borderRadius: 10,
+                      backgroundColor: "#f6f5fd",
+                    },
+                  }}
+                />
+              )}
               <Button
                 title="Mot de passe oublié ?"
                 theme="secondary"
                 isSocialButton={false}
                 styleText="text-sm text-primary-600 self-end px-0"
                 className=" px-0"
-                onPress={() => navigation2.navigate("Mot de passe oublie")}
+                onPress={() => navigation2.navigate("forgetPassword")}
               />
             </View>
           </View>
@@ -149,16 +230,22 @@ export default function Login() {
           <View className="button  px-4">
             <Button
               title={
-                loading ? (
+                verificationId ? (
+                  "Se connecter"
+                ) : loading ? (
                   <ActivityIndicator size={"large"} color={"#e29800"} />
                 ) : (
-                  "Se connecter"
+                  "Recevoir le code"
                 )
               }
               theme="primary"
               className=" justify-center items-center"
               styleText="text-white"
-              onPress={handleSubmit(handleLogin)}
+              onPress={
+                verificationId
+                  ? handleSubmit(confirmCode)
+                  : handleSubmit(handleLogin)
+              }
             />
             <View className="login flex-row  items-center justify-end ">
               <Text className=" text-gray-500 font-raleway text-sm">
@@ -171,6 +258,7 @@ export default function Login() {
                 className=" pt-2 "
                 isSocialButton={false}
                 onPress={() => navigation2.navigate("S'enregistrer")}
+                disabled={loading}
               />
             </View>
           </View>

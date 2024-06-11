@@ -73,10 +73,7 @@ export default function OtpVerification() {
           verificationId,
           verificationCode
         );
-        // Vérifiez le type du mot de passe
-        if (typeof password !== "string") {
-          throw new Error("Invalid password type");
-        }
+
         // Hashing the password before storing it
         let salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(password, salt);
