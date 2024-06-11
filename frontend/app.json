@@ -4,13 +4,15 @@
     "slug": "MyWallet",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/MWicon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/lancement.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      
+      "web": {
+        "bundler": "metro"
+      }
     },
     "ios": {
       "supportsTablet": true
@@ -27,7 +29,10 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true
