@@ -49,6 +49,7 @@ const Spend = () => {
         console.log("Document written with ID: ", docRef.id);
         Alert.alert("succes", "creation de la depense valide");
         setIsLoading(false);
+        reset();
       } catch (error: any) {
         console.error("Error adding document: ", error);
         Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);
