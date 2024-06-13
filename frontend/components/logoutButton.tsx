@@ -12,10 +12,10 @@ const LogoutButton = () => {
   const navigation = useNavigation<AuthNavigationProps>();
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      Alert.alert("Succès", "Déconnexion réussie !");
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
       navigation.navigate("login");
+      await signOut(auth);
+      Alert.alert("Succès", "Déconnexion réussie !");
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }

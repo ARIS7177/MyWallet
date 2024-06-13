@@ -194,28 +194,6 @@ export default function Login() {
                   />
                 )}
               />
-              {verificationId && (
-                <OtpInput
-                  numberOfDigits={6}
-                  focusColor="#FFC400"
-                  focusStickBlinkingDuration={500}
-                  onFilled={(text) => setCode(text)}
-                  textInputProps={{
-                    accessibilityLabel: "One-Time Password",
-                  }}
-                  theme={{
-                    containerStyle: {
-                      paddingHorizontal: 20,
-                    },
-                    pinCodeContainerStyle: {
-                      width: 58,
-                      height: 58,
-                      borderRadius: 10,
-                      backgroundColor: "#f6f5fd",
-                    },
-                  }}
-                />
-              )}
               <Button
                 title="Mot de passe oublié ?"
                 theme="secondary"
@@ -226,6 +204,28 @@ export default function Login() {
               />
             </View>
           </View>
+          {verificationId && (
+            <OtpInput
+              numberOfDigits={6}
+              focusColor="#FFC400"
+              focusStickBlinkingDuration={500}
+              onFilled={(text) => setCode(text)}
+              textInputProps={{
+                accessibilityLabel: "One-Time Password",
+              }}
+              theme={{
+                containerStyle: {
+                  paddingHorizontal: 20,
+                },
+                pinCodeContainerStyle: {
+                  width: 58,
+                  height: 58,
+                  borderRadius: 10,
+                  backgroundColor: "#f6f5fd",
+                },
+              }}
+            />
+          )}
 
           <View className="button  px-4">
             <Button
