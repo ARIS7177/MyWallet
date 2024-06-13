@@ -1,11 +1,23 @@
 {
   "extends": "expo/tsconfig.base",
-  "noImplicitAny": false,
   "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./types"],
     "strict": true,
+    "jsx": "react-native", // Ajoute cette ligne pour spécifier le JSX pour React Native
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "skipLibCheck": true, // Optionnelle, mais peut aider à ignorer certaines vérifications de type des fichiers de bibliothèque
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "target": "es5", // Optionnelle, mais spécifie la version ECMAScript cible
+    "lib": ["dom", "es2015"]
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  "exclude": ["node_modules"]
 }

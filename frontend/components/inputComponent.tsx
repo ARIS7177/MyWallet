@@ -121,6 +121,7 @@ export default function InputComponent({
             onChangeFormattedText={onChangeFormattedText}
             containerStyle={styles.phoneInputContainer}
             textContainerStyle={styles.phoneInputTextContainer}
+            flagButtonStyle={{ backgroundColor: "#efecfd" }}
           />
         </View>
       ) : (
