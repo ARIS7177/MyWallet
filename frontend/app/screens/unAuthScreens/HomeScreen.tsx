@@ -1,4 +1,4 @@
-import { Image, Text, View } from "react-native";
+import { Text, View, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "../../../components/Button";
 

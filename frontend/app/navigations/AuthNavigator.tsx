@@ -1,4 +1,4 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../screens/unAuthScreens/HomeScreen";
 import Signup from "../screens/unAuthScreens/signup";
 import { View } from "react-native";
@@ -40,7 +40,7 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<RootTabParamList>;
 };
 
-const Stack = createStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootStackParamList>();
 
 function AuthNavigator() {
