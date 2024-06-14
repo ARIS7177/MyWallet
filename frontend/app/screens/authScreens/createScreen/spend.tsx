@@ -192,7 +192,7 @@ const Spend = () => {
       </View>
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View className=" flex-1 justify-center items-center bg-black opacity-80">
-          <View className=" bg-white p-5 rounded-md w-4/5 align-middle">
+          <View className=" p-5 rounded-md w-4/5 align-middle bg-white gap-2 ">
             <Text>Nouvelle catégorie:</Text>
             <InputComponent
               className=" border-b border-gray-800 w-full mb-3 p-1"
@@ -201,8 +201,13 @@ const Spend = () => {
               onChangeText={setNewCategory}
               value={newCategory}
             />
-            <RNButton title="Ajouter" onPress={handleNewCategory} />
-            <RNButton title="Annuler" onPress={() => setModalVisible(false)} />
+            <View className="flex-row gap-2 justify-between ">
+              <RNButton title="Ajouter" onPress={handleNewCategory} />
+              <RNButton
+                title="Annuler"
+                onPress={() => setModalVisible(false)}
+              />
+            </View>
           </View>
         </View>
       </Modal>

@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
 import {
@@ -106,6 +107,7 @@ export default function Login() {
         );
         // Step 3: Sign in the user with the credential
         await signInWithCredential(auth, credential);
+        await AsyncStorage.setItem("userPhone", data.phone); // Stocker l'identifiant localement
       } else {
         console.log("something wrong");
       }
@@ -150,7 +152,7 @@ export default function Login() {
         <View className="container_body gap-5">
           <View className="header justify-center items-center gap-3 px-4">
             <View className="h1_group flex gap-2 items-center">
-              <Text className="h1 text-4xl text-primary-600 font-raleway-bold">
+              <Text className="h1 text-4xl text-primary-600 font-raleway-bold ">
                 Se connecter maintenant
               </Text>
               <View className="horizontal_line border-b  border-b-primary-600 w-52"></View>

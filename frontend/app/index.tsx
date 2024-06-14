@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -29,15 +30,23 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
+  const [user, setUser] = useState<string | null>(null);
   useEffect(() => {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
+        const storedUserPhone = await AsyncStorage.getItem("userPhone");
+        if (storedUserPhone) {
+          setUser(storedUserPhone);
+        } else {
+          setUser(null);
+        }
       } catch (e) {
         console.warn(e);
       } finally {
         if (fontsLoaded || fontError) {
           setAppIsReady(true);
+          console.log(user);
         }
       }
     }
@@ -49,8 +58,6 @@ export default function Index() {
       await SplashScreen.hideAsync();
     }
   }, [appIsReady]);
-
-  const [user] = useAuthState(auth);
 
   if (!appIsReady) {
     return null;
