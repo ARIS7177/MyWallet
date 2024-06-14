@@ -7,14 +7,17 @@ import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/app/navigations/AuthNavigator";
 import { StackNavigationProp } from "@react-navigation/stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUser } from "@/stores/user";
 
 type AuthNavigationProps = StackNavigationProp<RootStackParamList>;
 const LogoutButton = () => {
+  const setUser = useUser((state) => state.setUser);
   const navigation = useNavigation<AuthNavigationProps>();
   const handleLogout = async () => {
     try {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
-      navigation.navigate("stat");
+      setUser(undefined);
+      navigation.navigate("login");
       await AsyncStorage.removeItem("userPhone");
       await signOut(auth);
       Alert.alert("Succès", "Déconnexion réussie !");
