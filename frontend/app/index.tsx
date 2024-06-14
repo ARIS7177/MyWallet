@@ -31,10 +31,7 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
-  const { user, setUser } = useUser((state) => ({
-    user: state.user,
-    setUser: state.setUser,
-  }));
+  const { user, setUser } = useUser();
   useEffect(() => {
     async function prepare() {
       try {

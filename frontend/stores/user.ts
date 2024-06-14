@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 type IUserState = {
-  user: any | null;
+  user: any;
   setUser: (user: any) => void;
 };
 const useUser = create<IUserState>((set) => ({

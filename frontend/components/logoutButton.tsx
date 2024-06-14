@@ -16,7 +16,7 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     try {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
-      setUser(undefined);
+      setUser(null);
       await AsyncStorage.removeItem("userPhone");
       await signOut(auth);
       Alert.alert("Succès", "Déconnexion réussie !");
