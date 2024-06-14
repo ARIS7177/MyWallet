@@ -1,11 +1,12 @@
 import { create } from "zustand";
+
 type IUserState = {
-  user?: any;
+  user: any | null;
   setUser: (user: any) => void;
 };
 const useUser = create<IUserState>((set) => ({
-  user: {},
-  setUser: (user) => set((state) => ({ user })),
+  user: null,
+  setUser: (user) => set(() => ({ user })),
 }));
 
 export { useUser };

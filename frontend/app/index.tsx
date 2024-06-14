@@ -14,6 +14,7 @@ import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
 import { PhoneProvider } from "@/lib/PhoneContext";
+import { useUser } from "@/stores/user";
 
 enableScreens();
 
@@ -30,7 +31,10 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
-  const [user, setUser] = useState<string | null>(null);
+  const { user, setUser } = useUser((state) => ({
+    user: state.user,
+    setUser: state.setUser,
+  }));
   useEffect(() => {
     async function prepare() {
       try {

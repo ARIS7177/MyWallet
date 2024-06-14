@@ -17,10 +17,10 @@ const LogoutButton = () => {
     try {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
       setUser(undefined);
-      navigation.navigate("login");
       await AsyncStorage.removeItem("userPhone");
       await signOut(auth);
       Alert.alert("Succès", "Déconnexion réussie !");
+      navigation.navigate("login");
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }
