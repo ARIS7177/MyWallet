@@ -19,8 +19,11 @@ const LogoutButton = () => {
       setUser(null);
       await AsyncStorage.removeItem("userPhone");
       await signOut(auth);
-      Alert.alert("Succès", "Déconnexion réussie !");
-      navigation.navigate("login");
+      // navigation.navigate("login");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "login" }],
+      });
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }

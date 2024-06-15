@@ -31,6 +31,7 @@ import { RootTabParamList } from "../../navigations/Tabnavigator";
 import { RootStackParamList } from "../../navigations/AuthNavigator";
 import { PhoneContext, usePhoneContext } from "@/lib/PhoneContext";
 import { OtpInput } from "react-native-otp-entry";
+import { useVerificationId } from "@/stores/verificationId";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -49,17 +50,25 @@ export default function Login() {
   const { setPhone } = usePhoneContext();
   const [loading, setLoading] = useState(false);
   const recaptchaVerifier = useRef(null);
+  const [error, setError] = useState<string | null>(null);
   const [verificationId, setVerificationId] = useState<string | null>(null);
+  // const { verificationId, setVerificationId } = useVerificationId();
 
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<DataForm>({
     resolver: zodResolver(signInSchema),
   });
 
   const handleLogin = async (data: DataForm) => {
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 50000); // 30 seconds timeout
     console.log(data);
     try {
       setLoading(true);
@@ -84,6 +93,7 @@ export default function Login() {
             recaptchaVerifier.current!
           );
           setVerificationId(verificationId);
+          console.log(verificationId);
         } else {
           Alert.alert("Erreur", "Mot de passe incorect.");
         }
@@ -91,14 +101,25 @@ export default function Login() {
         Alert.alert("Erreur", "L'utilisateur est introuvable");
         setLoading(false);
       }
+      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+      clearTimeout(timeoutId); // Clear the timeout if operation is successful
     } catch (error: any) {
+      clearTimeout(timeoutId); // Clear the timeout if operation fails
       Alert.alert("Erreur", error.message);
       setLoading(false);
     }
   };
 
   const confirmCode = async (data: DataForm) => {
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 50000); // 30 seconds timeout
+    setLoading(true);
     try {
+      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+      clearTimeout(timeoutId); // Clear the timeout if operation is successful
       if (verificationId) {
         // Step 2: Sign in with the verification code
         const credential = PhoneAuthProvider.credential(
@@ -108,26 +129,30 @@ export default function Login() {
         // Step 3: Sign in the user with the credential
         await signInWithCredential(auth, credential);
         await AsyncStorage.setItem("userPhone", data.phone); // Stocker l'identifiant localement
+        reset();
       } else {
         console.log("something wrong");
       }
       auth.onAuthStateChanged((user) => {
         if (user) {
           console.log("User authenticated:", user);
-          navigation2.navigate("Main", {
-            screen: "home",
-            params: { phone: data.phone },
+          navigation2.reset({
+            index: 0,
+            routes: [{ name: "Main", params: { screen: "home" } }],
           });
         } else {
           console.log("User not authenticated");
         }
       });
     } catch (error: any) {
+      clearTimeout(timeoutId); // Clear the timeout if operation is successful
       console.error("Erreur lors de la confirmation du code:", error);
       Alert.alert(
         "Erreur",
         `Erreur lors de la confirmation du code: ${error.message}`
       );
+    } finally {
+      setLoading(false);
     }
   };
 

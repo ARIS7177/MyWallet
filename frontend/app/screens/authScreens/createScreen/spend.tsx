@@ -201,7 +201,7 @@ const Spend = () => {
               onChangeText={setNewCategory}
               value={newCategory}
             />
-            <View className="flex-row gap-2 justify-between ">
+            <View className="flex-row gap-2 justify-between">
               <RNButton title="Ajouter" onPress={handleNewCategory} />
               <RNButton
                 title="Annuler"

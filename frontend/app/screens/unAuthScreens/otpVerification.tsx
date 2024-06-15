@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, setDoc } from "firebase/firestore";
 import {
   Image,
   ScrollView,
@@ -36,22 +36,50 @@ export default function OtpVerification() {
   const [verificationCode, setVerificationCode] = useState("");
   const [codeSent, setCodeSent] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0); // Ajoutez cet état
+  const [isCountingDown, setIsCountingDown] = useState(false); // Ajoutez cet état
+
+  useEffect(() => {
+    //compte a rebours
+    if (isCountingDown) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsCountingDown(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isCountingDown]);
 
   useEffect(() => {
     const sendVerificationCode = async () => {
       setLoading(true);
       try {
-        const phoneProvider = new PhoneAuthProvider(auth);
-        const id = await phoneProvider.verifyPhoneNumber(
-          `+237${phone}`,
-          recaptchaVerifier.current!
-        );
-        setVerificationId(id);
-        setCodeSent(true);
-        Alert.alert("Succès", "Le code a été envoyé avec succès !");
-        setLoading(false);
+        const userDoc = await getDoc(doc(FIREBASE_BD, "users", `+237${phone}`));
+        if (!userDoc.exists()) {
+          const phoneProvider = new PhoneAuthProvider(auth);
+          const id = await phoneProvider.verifyPhoneNumber(
+            `+237${phone}`,
+            recaptchaVerifier.current!
+          );
+          setVerificationId(id);
+          setCodeSent(true);
+          Alert.alert("Succès", "Le code a été envoyé avec succès !");
+          setLoading(false);
+        } else {
+          Alert.alert(
+            "Erreur",
+            "le numero utilisé existe deja, veuillez changer de numero !!"
+          );
+          setLoading(false);
+        }
       } catch (error: any) {
-        console.error("Erreur lors de l'envoi du code:", error);
+        console.error("Erreur lors de l'envoie du code:", error);
         setError(`Error: ${error.message}`);
         setLoading(false);
         Alert.alert(
@@ -67,8 +95,14 @@ export default function OtpVerification() {
 
   const confirmCode = async () => {
     setLoading(true);
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 10000); // 10 seconds timeout
     try {
       if (verificationId) {
+        setLoading(true);
         const credential = PhoneAuthProvider.credential(
           verificationId,
           verificationCode
@@ -78,13 +112,13 @@ export default function OtpVerification() {
         let salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(password, salt);
         console.log("hashedPassword", typeof hashedPassword);
+
         // Vérifiez si hashedPassword est une chaîne de caractères
         if (typeof hashedPassword !== "string") {
           throw new Error(
             "Le mot de passe haché n'est pas une chaîne de caractères"
           );
         }
-        setLoading(true);
         await signInWithCredential(auth, credential);
         await setDoc(doc(FIREBASE_BD, "users", `+237${phone}`), {
           name,
@@ -94,31 +128,61 @@ export default function OtpVerification() {
           statut,
           password: hashedPassword,
         });
-        navigation.navigate("Main", { screen: "creer" });
+
+        await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+        // Clear the timeout if operation is successful
+        // Utilisez reset ici pour naviguer vers la nouvelle page et remplacer la pile de navigation
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Main", params: { screen: "creer" } }],
+        });
       }
     } catch (error: any) {
-      setLoading(false);
+      // Clear the timeout if operation fails
       console.error("Erreur lors de la confirmation du code:", error);
       setError(`Error: ${error.message}`);
       Alert.alert(
         "Erreur",
         `Erreur lors de la confirmation du code: ${error.message}`
       );
+    } finally {
+      setLoading(false);
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
     }
   };
 
   const resendCode = async () => {
+    if (isCountingDown) return; // Empêche le renvoi si le compte à rebours est en cours
+
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 10000); // 10 seconds timeout
     setLoading(true);
     setError(null); // Clear any previous error
+    await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+    clearTimeout(timeoutId); // Clear the timeout if operation is successful
+    const userDoc = await getDoc(doc(FIREBASE_BD, "users", `+237${phone}`));
     try {
-      const phoneProvider = new PhoneAuthProvider(auth);
-      const id = await phoneProvider.verifyPhoneNumber(
-        `+237${phone}`,
-        recaptchaVerifier.current!
-      );
-      setLoading(false);
-      setVerificationId(id);
-      Alert.alert("Succès", "Le code a été renvoyé avec succès !");
+      if (!userDoc.exists()) {
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const id = await phoneProvider.verifyPhoneNumber(
+          `+237${phone}`,
+          recaptchaVerifier.current!
+        );
+        setLoading(false);
+        setVerificationId(id);
+        Alert.alert("Succès", "Le code a été renvoyé avec succès !");
+        setCountdown(60); // Démarrez le compte à rebours
+        setIsCountingDown(true); // Démarrez le compte à rebours
+      } else {
+        Alert.alert(
+          "Erreur",
+          "Impossible de reenvoyer le code de verification, numero existant !!"
+        );
+      }
     } catch (error: any) {
       console.error("Erreur lors de la réexpédition du code:", error);
       setError(`Error: ${error.message}`);
@@ -126,6 +190,8 @@ export default function OtpVerification() {
         "Erreur",
         `Erreur lors de la réexpédition du code: ${error.message}`
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -197,7 +263,17 @@ export default function OtpVerification() {
               Vous ne trouvez pas de code?
             </Text>
             <Button
-              title="Renvoyer"
+              title={
+                isCountingDown ? (
+                  <Text className=" text-gray-500">
+                    Renvoyer dans ({countdown}s)
+                  </Text>
+                ) : loading ? (
+                  <ActivityIndicator />
+                ) : (
+                  "Renvoyer"
+                )
+              }
               theme="secondary"
               styleText=" text-primary-600 text-sm"
               className="pt-1"

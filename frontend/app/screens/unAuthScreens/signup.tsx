@@ -2,10 +2,11 @@ import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RecaptchaVerifier, getAuth } from "firebase/auth";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -21,25 +22,72 @@ const signUpSchema = z
     nom: z.string().min(1, "Nom est requis"),
     prenom: z.string().min(1, "Prénom est requis"),
     phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
-    datenaissance: z.string(),
+    datenaissance: z.string().refine(
+      (date) => {
+        const [month, day, year] = date.split("/").map(Number);
+        const birthDate = new Date(year, month - 1, day);
+        const age = new Date().getFullYear() - birthDate.getFullYear();
+        const m = new Date().getMonth() - birthDate.getMonth();
+        return (
+          age > 18 ||
+          (age === 18 && m >= 0 && new Date().getDate() >= birthDate.getDate())
+        );
+      },
+      {
+        message: "Vous devez avoir au moins 18 ans pour vous inscrire.",
+      }
+    ),
     statut: z.string().min(1, "votre statut professionnel requis"),
     motdepasse: z
       .string()
-      .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+      .min(8, "Le mot de passe doit contenir au moins 8 caractères.")
+      .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule.")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Le mot de passe doit contenir au moins un symbole spécial."
+      ),
     confirmPassword: z
       .string()
-      .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+      .min(8, "Le mot de passe doit contenir au moins 8 caractères.")
+      .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule.")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Le mot de passe doit contenir au moins un symbole spécial."
+      ),
   })
   .refine((data) => data.motdepasse === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => {
+      // Vérifier si la date de naissance est fournie et si l'utilisateur a plus de 18 ans
+      if (data.datenaissance) {
+        const birthDate = new Date(data.datenaissance);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+        return age >= 1;
+      }
+      return false; // Retourner faux si la date de naissance n'est pas fournie
+    },
+    {
+      message: "Vous devez avoir au moins 18 ans pour vous inscrire",
+      path: ["datenaissance"],
+    }
+  );
 
 type DataForm = z.infer<typeof signUpSchema>;
 
 export default function Signup({ navigation }: any) {
   const [loading, setLoading] = useState(false);
-  const phoneInputRef = useRef(null);
+  const [error, setError] = useState("");
   const {
     control,
     handleSubmit,
@@ -47,17 +95,44 @@ export default function Signup({ navigation }: any) {
   } = useForm<DataForm>({
     resolver: zodResolver(signUpSchema),
   });
-  const onSubmit = (data: DataForm) => {
-    setLoading(true);
-    console.log(data, typeof data.motdepasse);
-    navigation.navigate("Verification", {
-      name: data.nom,
-      firstname: data.prenom,
-      phone: data.phone,
-      birthday: data.datenaissance,
-      statut: data.statut,
-      password: data.motdepasse,
+  // Arrêter le loader si l'utilisateur revient à la page précédente
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      setLoading(false);
+      setError("");
     });
+
+    return unsubscribe;
+  }, [navigation]);
+  const onSubmit = async (data: DataForm) => {
+    setLoading(true);
+    setError("");
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 10000); // 10 seconds timeout
+    try {
+      // Simulate async operation like API call
+      // Replace this setTimeout with actual API call
+      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+
+      clearTimeout(timeoutId); // Clear the timeout if operation is successful
+
+      navigation.navigate("Verification", {
+        name: data.nom,
+        firstname: data.prenom,
+        phone: data.phone,
+        birthday: data.datenaissance,
+        statut: data.statut,
+        password: data.motdepasse,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId); // Clear the timeout if operation fails
+      setLoading(false);
+      setError("Une erreur s'est produite, veuillez réessayer.");
+      Alert.alert("Erreur", "Une erreur s'est produite, veuillez réessayer.");
+    }
   };
 
   return (
