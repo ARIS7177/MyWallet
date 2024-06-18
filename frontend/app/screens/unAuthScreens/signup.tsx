@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RecaptchaVerifier, getAuth } from "firebase/auth";
 import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import SelectDropdown from "react-native-select-dropdown";
 import {
   ActivityIndicator,
   Alert,
@@ -15,6 +16,7 @@ import {
   View,
 } from "react-native";
 import * as z from "zod";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 // Définir le schéma de validation avec Zod
 const signUpSchema = z
@@ -22,21 +24,7 @@ const signUpSchema = z
     nom: z.string().min(1, "Nom est requis"),
     prenom: z.string().min(1, "Prénom est requis"),
     phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
-    datenaissance: z.string().refine(
-      (date) => {
-        const [month, day, year] = date.split("/").map(Number);
-        const birthDate = new Date(year, month - 1, day);
-        const age = new Date().getFullYear() - birthDate.getFullYear();
-        const m = new Date().getMonth() - birthDate.getMonth();
-        return (
-          age > 18 ||
-          (age === 18 && m >= 0 && new Date().getDate() >= birthDate.getDate())
-        );
-      },
-      {
-        message: "Vous devez avoir au moins 18 ans pour vous inscrire.",
-      }
-    ),
+    datenaissance: z.string(),
     statut: z.string().min(1, "votre statut professionnel requis"),
     motdepasse: z
       .string()
@@ -58,36 +46,21 @@ const signUpSchema = z
   .refine((data) => data.motdepasse === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
     path: ["confirmPassword"],
-  })
-  .refine(
-    (data) => {
-      // Vérifier si la date de naissance est fournie et si l'utilisateur a plus de 18 ans
-      if (data.datenaissance) {
-        const birthDate = new Date(data.datenaissance);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < birthDate.getDate())
-        ) {
-          age--;
-        }
-        return age >= 1;
-      }
-      return false; // Retourner faux si la date de naissance n'est pas fournie
-    },
-    {
-      message: "Vous devez avoir au moins 18 ans pour vous inscrire",
-      path: ["datenaissance"],
-    }
-  );
+  });
 
 type DataForm = z.infer<typeof signUpSchema>;
 
 export default function Signup({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  //tableau de donnees pour le select option
+  const data = [
+    { title: "Employeur" },
+    { title: "Employer" },
+    { title: "Etudiant" },
+    { title: "independant" },
+    { title: "sans emploi" },
+  ];
   const {
     control,
     handleSubmit,
@@ -222,17 +195,53 @@ export default function Signup({ navigation }: any) {
               control={control}
               name="statut"
               render={({ field: { onChange, onBlur, value } }) => (
-                <InputComponent
-                  type="default"
-                  placeholder="Statut professionnel"
-                  onChangeText={onChange}
-                  secureTextEntry={false}
-                  isIcon={false}
-                  value={value}
-                  errorMessage={errors.statut?.message}
+                <SelectDropdown
+                  data={data}
+                  onSelect={(selectedItem) => {
+                    onChange(selectedItem.title as string);
+                    console.log(
+                      "selectedItem",
+                      selectedItem.title,
+                      typeof selectedItem.title
+                    );
+                  }}
+                  renderButton={(selectedItem, isOpened) => {
+                    return (
+                      <View className=" w-full h-16 border-[0.5px] border-[#292929] bg-purple-50 rounded-xl flex-row justify-between items-center gap-10 px-5">
+                        <Text className="text-xl font-helvitica text-[#151E26]">
+                          {(selectedItem && selectedItem.title) ||
+                            "selectionner votre statut"}
+                        </Text>
+                        <Icon
+                          name={isOpened ? "chevron-up" : "chevron-down"}
+                          style={{ fontSize: 24 }}
+                        />
+                      </View>
+                    );
+                  }}
+                  renderItem={(item) => {
+                    return (
+                      <View className=" w-full  bg-emerald-700 flex-row px-3 justify-center items-center py-2">
+                        <Text className=" text-xl font-raleway">
+                          {item.title}
+                        </Text>
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  dropdownStyle={{
+                    backgroundColor: "#E9ECEF",
+                    borderRadius: 8,
+                    height: 150,
+                  }}
                 />
               )}
             />
+            {errors.statut && (
+              <Text style={{ color: "red", marginTop: 5 }}>
+                {errors.statut.message}
+              </Text>
+            )}
 
             <View className="pass flex-row gap-5 justify-between">
               <View className="flex-1">

@@ -5,14 +5,20 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { Controller } from "react-hook-form";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import PhoneInput from "react-native-phone-number-input";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
+// import DateTimePickerModal from "react-native-modal-datetime-picker";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+
 import clsx from "clsx";
+import { string } from "zod";
 
 //noms d'icones presents dans MaterialIcons
 const iconNames = {
@@ -60,8 +66,18 @@ export default function InputComponent({
   const [isFocus, setIsFocus] = useState(false);
   const handleFocus = () => setIsFocus(true);
   const handleBlur = () => setIsFocus(false);
+  const currentYear = new Date().getFullYear();
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const showDatePicker = () => {
     setDatePickerVisibility(true);
+  };
+
+  // Fonction utilitaire pour formater la date en "jour-mois-année"
+  const formatDate = (date: Date) => {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Les mois sont de 0 à 11
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   const hideDatePicker = () => {
@@ -72,10 +88,15 @@ export default function InputComponent({
     setIsVisiblePassword(!isVisiblePassword);
   };
 
-  const handleConfirm = (date: any) => {
-    const formattedDate = date.toLocaleDateString();
-    onChangeText(formattedDate);
-    hideDatePicker();
+  const handleConfirm = (event: DateTimePickerEvent, date?: Date) => {
+    if (date) {
+      const formattedDate = formatDate(date);
+      onChangeText(formattedDate);
+      setSelectedDate(date);
+    }
+    if (Platform.OS === "android") {
+      hideDatePicker();
+    }
   };
 
   const iconName = personalIcon || iconNames[type];
@@ -91,7 +112,7 @@ export default function InputComponent({
         name={iconName}
         size={20}
         color={"gray"}
-        className={clsx("", iconStyle)}
+        // className={clsx("", iconStyle)}
       />
     );
   };
@@ -102,12 +123,17 @@ export default function InputComponent({
           <TouchableOpacity onPress={showDatePicker} style={styles.dateInput}>
             <Text className=" text-russian-950">{value || placeholder}</Text>
           </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={handleConfirm}
-            onCancel={hideDatePicker}
-          />
+          {isDatePickerVisible && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display="default"
+              maximumDate={new Date(currentYear - 18, 10, 20)}
+              timeZoneName="Africa/Douala"
+              onChange={handleConfirm}
+              onTouchCancel={hideDatePicker}
+            />
+          )}
         </View>
       ) : type === "phone" ? (
         <View className=" flex-row border-[#292929] border-[0.5px] rounded-xl overflow-hidden">
