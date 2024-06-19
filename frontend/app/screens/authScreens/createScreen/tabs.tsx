@@ -10,7 +10,7 @@ const Tabs = () => {
       <View className=" gap-20 mt-10 justify-centernter">
         <View className="header gap-4">
           <Text className=" text-russian-950 text-center font-helvitica-bold text-3xl">
-            S'agit-il d'un/d'une:
+            Que voulez-vous creer?
           </Text>
           <View className="buttons gap-4 flex-row justify-center">
             <Button
@@ -33,13 +33,6 @@ const Tabs = () => {
               isComposed
               isActive={activeTab === "tab3"}
               onPress={() => setActiveTab("tab3")}
-            />
-            <Button
-              title="Categorie"
-              theme="secondary"
-              isComposed
-              isActive={activeTab === "tab4"}
-              onPress={() => setActiveTab("tab4")}
             />
           </View>
         </View>

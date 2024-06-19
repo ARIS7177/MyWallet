@@ -1,12 +1,17 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import HomePage from "../screens/authScreens/homePage";
 import Transaction from "../screens/authScreens/transaction";
 import CreatePage from "../screens/authScreens/createPage";
 import Stats from "../screens/authScreens/stats";
 import Setting from "../screens/authScreens/setting";
 
+interface Props {
+  iconType?: "FontAwesome" | "MaterialIcons" | "Ionicons";
+}
 const Tab = createBottomTabNavigator();
 export type RootTabParamList = {
   home: { phone: string };
@@ -17,9 +22,10 @@ export type RootTabParamList = {
   parametre: undefined;
 };
 
-function TabNavigator() {
+function TabNavigator({ iconType = "Ionicons" }: Props) {
   return (
     <Tab.Navigator
+      initialRouteName="home"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -57,19 +63,18 @@ function TabNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="home" component={HomePage} />
       <Tab.Screen name="transaction" component={Transaction} />
       <Tab.Screen
         name="creer"
         component={CreatePage}
         options={{
-          title: "Creer un nouveau status",
           headerTitleAlign: "center",
+          headerShown: false,
         }}
       />
-      <Tab.Screen name="categorie" component={Stats} />
-      <Tab.Screen name="stat" component={Stats} />
-      <Tab.Screen name="parametre" component={Setting} />
+      <Tab.Screen name="home" component={HomePage} />
+      <Tab.Screen name="Stats" component={Stats} />
+      <Tab.Screen name="Parametres" component={Setting} />
     </Tab.Navigator>
   );
 }

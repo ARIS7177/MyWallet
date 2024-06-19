@@ -5,8 +5,9 @@ import {
   TouchableNativeFeedback,
   Keyboard,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import InputComponent from "@/components/inputComponent";
 import * as zod from "zod";
 import { useForm, Controller } from "react-hook-form";
@@ -55,32 +56,38 @@ const ResetPassword = () => {
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(passSchema) });
   const navigation = useNavigation<AuthNavigationProps>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleResetPassword = async (data: FormData) => {
+    setIsLoading(true);
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const salt = bcrypt.genSaltSync(10);
-        const hashPassword = bcrypt.hashSync(data.password, salt);
-        await updatePassword(user, hashPassword);
-        Alert.alert("Succès", "Votre mot de passe a été mis à jour");
-        navigation.navigate("login");
-      } else {
-        Alert.alert("Erreur", "Aucun utilisateur connecté");
-      }
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          const salt = bcrypt.genSaltSync(10);
+          const hashPassword = bcrypt.hashSync(data.password, salt);
+
+          updatePassword(user, hashPassword);
+          Alert.alert("Succès", "Votre mot de passe a été mis à jour");
+          navigation.navigate("login");
+        } else {
+          Alert.alert("Erreur", "Aucun utilisateur connecté");
+        }
+      });
     } catch (error: any) {
       Alert.alert("Erreur", error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
-    <ScrollView>
+    <ScrollView className="">
       <TouchableNativeFeedback onPress={Keyboard.dismiss}>
-        <View className="container flex-1 gap-10">
+        <View className="container flex-1 gap-10 mt-10 justify-center px-3">
           <View className="header justify-center">
-            <Text className="text-4xl font-helvitica-bold">
+            <Text className="text-4xl font-helvitica-bold text-center">
               Creer un nouveau nom de passe
             </Text>
-            <Text className="text-sm font-raleway">
+            <Text className="text-lg font-raleway text-center">
               Votre nouveau mot de passe doit etre different de l’ancien
             </Text>
           </View>
@@ -119,10 +126,16 @@ const ResetPassword = () => {
             />
           </View>
           <Button
-            title={"Renitialiser"}
+            title={
+              isLoading ? (
+                <ActivityIndicator color={"#fff"} size={"large"} />
+              ) : (
+                "Renitialiser"
+              )
+            }
             theme="primary"
             styleText=" text-white"
-            onPress={handleResetPassword}
+            onPress={handleSubmit(handleResetPassword)}
           />
         </View>
       </TouchableNativeFeedback>

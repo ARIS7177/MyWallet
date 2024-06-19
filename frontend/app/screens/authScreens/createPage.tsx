@@ -12,7 +12,10 @@ const CreatePage = () => {
       <Stack.Screen
         name="tabs"
         component={Tabs}
-        options={{ headerShown: false, headerTitleAlign: "center" }}
+        options={{
+          headerShown: false,
+          headerTitleAlign: "center",
+        }}
       />
     </Stack.Navigator>
   );

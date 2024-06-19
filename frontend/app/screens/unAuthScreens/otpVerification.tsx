@@ -22,6 +22,7 @@ import {
   signInWithCredential,
 } from "@/firebaseConfig";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type optVerification = RouteProp<RootStackParamList, "Verification">;
 type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
@@ -58,7 +59,7 @@ export default function OtpVerification() {
 
   useEffect(() => {
     const sendVerificationCode = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         const userDoc = await getDoc(doc(FIREBASE_BD, "users", `+237${phone}`));
         if (!userDoc.exists()) {
@@ -119,6 +120,7 @@ export default function OtpVerification() {
             "Le mot de passe haché n'est pas une chaîne de caractères"
           );
         }
+        await AsyncStorage.setItem("userPhone", phone); // Stocker l'identifiant localement
         await signInWithCredential(auth, credential);
         await setDoc(doc(FIREBASE_BD, "users", `+237${phone}`), {
           name,

@@ -1,7 +1,6 @@
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecaptchaVerifier, getAuth } from "firebase/auth";
 import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import SelectDropdown from "react-native-select-dropdown";
