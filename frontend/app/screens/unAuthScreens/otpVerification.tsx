@@ -1,289 +1,341 @@
-import React, { useEffect, useRef, useState } from "react";
-import { addDoc, collection, doc, getDoc, setDoc } from "firebase/firestore";
+import React, { useState } from "react";
 import {
-  Image,
-  ScrollView,
-  Text,
+  StyleSheet,
   View,
+  Text,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  FlatList,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { OtpInput } from "react-native-otp-entry";
-import { RootStackParamList } from "../../navigations/AuthNavigator";
-import Button from "@/components/Button";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import bcrypt from "react-native-bcrypt";
+import Button from "../../../components/Button";
+import * as zod from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import InputComponent from "../../../components/inputComponent";
+import { FIREBASE_BD, auth } from "@/firebaseConfig";
 import {
-  FIREBASE_APP,
-  FIREBASE_BD,
-  PhoneAuthProvider,
-  FirebaseRecaptchaVerifierModal,
-  auth,
-  signInWithCredential,
-} from "@/firebaseConfig";
-import { StackNavigationProp } from "@react-navigation/stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 
-type optVerification = RouteProp<RootStackParamList, "Verification">;
-type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
-export default function OtpVerification() {
-  const navigation = useNavigation<AuthNavigationPropsStack>();
-  const route = useRoute<optVerification>();
-  const { name, firstname, phone, birthday, statut, password } = route.params;
+const spendSchema = zod.object({
+  description: zod.string().min(3, "Entrer la raison de la dépense"),
+  montant: zod.coerce.number(),
+  categorie: zod.string().min(1, "Choisissez une catégorie"),
+  newCategorie: zod
+    .string()
+    .min(1, "Créer une nouvelle catégorie une catégorie"),
+});
+type spendData = zod.infer<typeof spendSchema>;
 
-  const recaptchaVerifier = useRef(null);
-  const [verificationId, setVerificationId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [codeSent, setCodeSent] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0); // Ajoutez cet état
-  const [isCountingDown, setIsCountingDown] = useState(false); // Ajoutez cet état
+const Spend = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const user = auth.currentUser;
+  const [categories, setCategories] = useState([
+    { label: "Alimentation", value: "cat1" },
+    { label: "Transport", value: "cat2" },
+    { label: "Connexion", value: "cat3" },
+    { label: "Bien-être", value: "cat4" },
+    { label: "Créer une nouvelle catégorie", value: "create_new_category" },
+  ]); // Initial categories
+  const [openModal, setOpenModal] = useState(false);
+  const [newCategorie, setNewCategorie] = useState("");
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  useEffect(() => {
-    //compte a rebours
-    if (isCountingDown) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setIsCountingDown(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isCountingDown]);
+  const {
+    setValue,
+    reset,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<spendData>({
+    resolver: zodResolver(spendSchema),
+  });
 
-  useEffect(() => {
-    const sendVerificationCode = async () => {
-      // setLoading(true);
-      try {
-        const userDoc = await getDoc(doc(FIREBASE_BD, "users", `+237${phone}`));
-        if (!userDoc.exists()) {
-          const phoneProvider = new PhoneAuthProvider(auth);
-          const id = await phoneProvider.verifyPhoneNumber(
-            `+237${phone}`,
-            recaptchaVerifier.current!
+  const addNewCategory = async () => {
+    if (newCategorie) {
+      const newCategory = {
+        label: newCategorie,
+        value: newCategorie.toLowerCase().replace(/\s+/g, ""),
+      };
+      setCategories([...categories, newCategory]);
+      setNewCategorie("");
+      setOpenModal(false);
+
+      // Save new category to Firestore
+      if (user) {
+        try {
+          await setDoc(
+            doc(
+              FIREBASE_BD,
+              `users/${user.uid}/categories/${newCategory.value}`
+            ),
+            {
+              name: newCategorie,
+              createdAt: serverTimestamp(),
+            }
           );
-          setVerificationId(id);
-          setCodeSent(true);
-          Alert.alert("Succès", "Le code a été envoyé avec succès !");
-          setLoading(false);
-        } else {
-          Alert.alert(
-            "Erreur",
-            "le numero utilisé existe deja, veuillez changer de numero !!"
-          );
-          setLoading(false);
+        } catch (error: any) {
+          console.error("Error adding category: ", error);
+          Alert.alert("Erreur", `Une erreur est survenue: ${error.message}`);
         }
-      } catch (error: any) {
-        console.error("Erreur lors de l'envoie du code:", error);
-        setError(`Error: ${error.message}`);
-        setLoading(false);
-        Alert.alert(
-          "Erreur",
-          `Erreur lors de l'envoi du code: ${error.message}`
-        );
+      } else {
+        console.log("User not connected!!");
       }
-    };
-
-    sendVerificationCode();
-  }, [phone]);
-  console.log("verificationId: ", verificationId);
-
-  const confirmCode = async () => {
-    setLoading(true);
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setError("La connexion est mauvaise, veuillez réessayer.");
-      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
-    }, 10000); // 10 seconds timeout
-    try {
-      if (verificationId) {
-        setLoading(true);
-        const credential = PhoneAuthProvider.credential(
-          verificationId,
-          verificationCode
-        );
-
-        // Hashing the password before storing it
-        let salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync(password, salt);
-        console.log("hashedPassword", typeof hashedPassword);
-
-        // Vérifiez si hashedPassword est une chaîne de caractères
-        if (typeof hashedPassword !== "string") {
-          throw new Error(
-            "Le mot de passe haché n'est pas une chaîne de caractères"
-          );
-        }
-        await AsyncStorage.setItem("userPhone", phone); // Stocker l'identifiant localement
-        await signInWithCredential(auth, credential);
-        await setDoc(doc(FIREBASE_BD, "users", `+237${phone}`), {
-          name,
-          firstname,
-          phone: `+237${phone}`,
-          birthday,
-          statut,
-          password: hashedPassword,
-        });
-
-        await new Promise((resolve, reject) => setTimeout(resolve, 2000));
-        // Clear the timeout if operation is successful
-        // Utilisez reset ici pour naviguer vers la nouvelle page et remplacer la pile de navigation
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Main", params: { screen: "creer" } }],
-        });
-      }
-    } catch (error: any) {
-      // Clear the timeout if operation fails
-      console.error("Erreur lors de la confirmation du code:", error);
-      setError(`Error: ${error.message}`);
-      Alert.alert(
-        "Erreur",
-        `Erreur lors de la confirmation du code: ${error.message}`
-      );
-    } finally {
-      setLoading(false);
-      clearTimeout(timeoutId);
-      clearTimeout(timeoutId);
     }
   };
 
-  const resendCode = async () => {
-    if (isCountingDown) return; // Empêche le renvoi si le compte à rebours est en cours
+  const createSpend = async (data: spendData) => {
+    console.log("data", data);
 
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setError("La connexion est mauvaise, veuillez réessayer.");
-      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
-    }, 10000); // 10 seconds timeout
-    setLoading(true);
-    setError(null); // Clear any previous error
-    await new Promise((resolve, reject) => setTimeout(resolve, 2000));
-    clearTimeout(timeoutId); // Clear the timeout if operation is successful
-    const userDoc = await getDoc(doc(FIREBASE_BD, "users", `+237${phone}`));
-    try {
-      if (!userDoc.exists()) {
-        const phoneProvider = new PhoneAuthProvider(auth);
-        const id = await phoneProvider.verifyPhoneNumber(
-          `+237${phone}`,
-          recaptchaVerifier.current!
-        );
-        setLoading(false);
-        setVerificationId(id);
-        Alert.alert("Succès", "Le code a été renvoyé avec succès !");
-        setCountdown(60); // Démarrez le compte à rebours
-        setIsCountingDown(true); // Démarrez le compte à rebours
-      } else {
-        Alert.alert(
-          "Erreur",
-          "Impossible de reenvoyer le code de verification, numero existant !!"
-        );
+    if (user) {
+      try {
+        setIsLoading(true);
+        const docRef = await addDoc(collection(FIREBASE_BD, `expenses`), {
+          uid: user.uid,
+          phoneNumber: user.phoneNumber,
+          montant: data.montant,
+          description: data.description,
+          categorie: data.categorie,
+          timestamp: new Date(),
+        });
+        console.log("Document written with ID: ", docRef.id);
+        Alert.alert("Succès", "Création de la dépense valide");
+        reset();
+        setIsLoading(false);
+      } catch (error: any) {
+        console.error("Error adding document: ", error);
+        Alert.alert("Erreur", `Une erreur est survenue: ${error.message}`);
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      console.error("Erreur lors de la réexpédition du code:", error);
-      setError(`Error: ${error.message}`);
-      Alert.alert(
-        "Erreur",
-        `Erreur lors de la réexpédition du code: ${error.message}`
-      );
-    } finally {
-      setLoading(false);
+    } else {
+      console.log("User is not signed in.");
     }
   };
 
   return (
-    <ScrollView>
-      <View className="containerflex-1  gap-10">
-        <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVerifier}
-          firebaseConfig={FIREBASE_APP.options}
-        />
-        <View className="images  p-0 relative w-full ">
-          <Image
-            className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-            source={require("../../../assets/images/Ellipse.png")}
-            resizeMode="cover"
-          />
-          <Image
-            className=" w-full"
-            source={require("../../../assets/images/verification.png")}
-            resizeMode="cover"
+    <View style={styles.container}>
+      <Text style={styles.title}>Créer une nouvelle dépense</Text>
+      <View style={styles.inputs}>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Montant</Text>
+          <Controller
+            control={control}
+            name="montant" // Assurez-vous d'avoir le bon nom pour ce champ
+            render={({ field: { onChange, value } }) => (
+              <InputComponent
+                type="default"
+                placeholder="Entrer un montant"
+                onChangeText={onChange}
+                isIcon={false}
+                errorMessage={errors.montant?.message}
+              />
+            )}
           />
         </View>
-        <View className="texts  gap-1  px-4 items-center">
-          <Text className="title font-helvitica-bold text-4xl text-center text-russian-950">
-            Verifier votre numero de téléphone
-          </Text>
-          <Text className="sub_title text-center  text-lg font-raleway">
-            Nous avons envoyé un code au numéro{" "}
-            <Text className=" font-raleway-bold">{phone}</Text> , Entrez le code
-            ci-dessous
-          </Text>
-        </View>
-        <OtpInput
-          numberOfDigits={6}
-          focusColor="#FFC400"
-          focusStickBlinkingDuration={500}
-          onFilled={(text) => setVerificationCode(text)}
-          textInputProps={{
-            accessibilityLabel: "One-Time Password",
-          }}
-          theme={{
-            containerStyle: {
-              paddingHorizontal: 20,
-            },
-            pinCodeContainerStyle: {
-              width: 58,
-              height: 58,
-              borderRadius: 10,
-              backgroundColor: "#f6f5fd",
-            },
-          }}
-        />
-        <View className="buttons px-4 mt-20">
-          <Button
-            title={
-              loading ? (
-                <ActivityIndicator size={"large"} color={"#fff"} />
-              ) : (
-                "S'inscrire"
-              )
-            }
-            theme="primary"
-            styleText="text-white"
-            onPress={confirmCode}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Description</Text>
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, value } }) => (
+              <InputComponent
+                type="default"
+                placeholder="Entrer une description"
+                onChangeText={onChange}
+                isIcon={false}
+                errorMessage={errors.description?.message}
+              />
+            )}
           />
-          {error && <Text className=" text-red-500">{error}</Text>}
-          <View className="resend flex-row items-center justify-end gap-1">
-            <Text className=" text-gray-400 font-raleway">
-              Vous ne trouvez pas de code?
-            </Text>
-            <Button
-              title={
-                isCountingDown ? (
-                  <Text className=" text-gray-500">
-                    Renvoyer dans ({countdown}s)
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Catégorie</Text>
+          <Controller
+            control={control}
+            name="categorie"
+            render={({ field: { onChange, value } }) => (
+              <>
+                <TouchableOpacity
+                  style={styles.dropdown}
+                  onPress={() => setCategoryModalVisible(true)}
+                >
+                  <Text>
+                    {selectedCategory || "Sélectionner une catégorie"}
                   </Text>
-                ) : loading ? (
-                  <ActivityIndicator />
-                ) : (
-                  "Renvoyer"
-                )
-              }
-              theme="secondary"
-              styleText=" text-primary-600 text-sm"
-              className="pt-1"
-              onPress={resendCode}
-            />
-          </View>
+                </TouchableOpacity>
+                {errors.categorie && (
+                  <Text style={{ color: "red" }}>
+                    {errors.categorie.message}
+                  </Text>
+                )}
+              </>
+            )}
+          />
         </View>
       </View>
-    </ScrollView>
+      <View style={styles.buttons}>
+        <Button
+          title={
+            isLoading ? (
+              <ActivityIndicator size={"large"} color={"#fff"} />
+            ) : (
+              "Créer nouvelle dépense"
+            )
+          }
+          theme="primary"
+          styleText="text-white"
+          onPress={handleSubmit(createSpend)}
+          // style={styles.button}
+        />
+      </View>
+      <Modal visible={openModal} transparent={true} animationType="slide">
+        <TouchableWithoutFeedback onPress={() => setOpenModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalView}>
+                <Text style={styles.modalTitle}>Nouvelle catégorie</Text>
+                <TextInput
+                  placeholder="Nouvelle catégorie"
+                  value={newCategorie}
+                  onChangeText={setNewCategorie}
+                  style={styles.input}
+                />
+                <View style={styles.modalButtons}>
+                  <Button
+                    title="Annuler"
+                    theme="danger"
+                    onPress={() => setOpenModal(false)}
+                    styleText="text-lg px-4"
+                    // style={styles.modalButton}
+                  />
+                  <Button
+                    title="Ajouter"
+                    theme="success"
+                    onPress={addNewCategory}
+                    styleText="text-lg px-4"
+                    // style={styles.modalButton}
+                  />
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      <Modal
+        visible={categoryModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setCategoryModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalView}>
+                <FlatList
+                  data={categories}
+                  keyExtractor={(item) => item.value}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.categoryItem}
+                      onPress={() => {
+                        setSelectedCategory(item.label);
+                        setCategoryModalVisible(false);
+                        setValue("categorie", item.value);
+                      }}
+                    >
+                      <Text>{item.label}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    gap: 16,
+  },
+  title: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  inputs: {
+    gap: 16,
+  },
+  inputContainer: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 18,
+    fontWeight: "500",
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 4,
+  },
+  buttons: {
+    marginTop: 16,
+  },
+  button: {
+    marginTop: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 8,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  input: {
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    margin: 10,
+    borderRadius: 5,
+    width: "100%",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  modalButton: {
+    width: 120,
+  },
+  categoryItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+});
+
+export default Spend;

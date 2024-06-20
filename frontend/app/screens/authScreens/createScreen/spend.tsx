@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -42,8 +42,11 @@ const Spend = () => {
   const [isLoading, setIsLoading] = useState(false);
   const user = auth.currentUser;
   const [categories, setCategories] = useState([
-    { label: "Catégorie 1", value: "cat1" },
-    { label: "Catégorie 2", value: "cat2" },
+    { label: "Alimentation", value: "cat1" },
+    { label: "Transport", value: "cat2" },
+    { label: "Connexion", value: "cat3" },
+    { label: "bien-etre", value: "cat4" },
+    { label: "creer une nouvelle categorie", value: "create_new_category" },
   ]); // Initial categories
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -94,7 +97,6 @@ const Spend = () => {
 
   const createSpend = async (data: spendData) => {
     console.log("data", data);
-
     if (user) {
       try {
         setIsLoading(true);
@@ -178,10 +180,20 @@ const Spend = () => {
                   value={value}
                   items={categories}
                   setOpen={setOpen}
-                  setValue={onChange}
+                  setValue={(callback) => {
+                    const selectedValue = callback(value);
+                    if (selectedValue === "create_new_category") {
+                      setOpen(false);
+                      setOpenModal(true);
+                    } else {
+                      onChange(selectedValue);
+                    }
+                  }}
                   setItems={setCategories}
                   placeholder="Sélectionner une catégorie"
-                  style={{ zIndex: 1000 }}
+                  style={{ zIndex: 1000, backgroundColor: "#f6f5fd" }}
+                  autoScroll={true}
+                  maxHeight={100}
                 />
                 <TouchableOpacity
                   onPress={() => setOpenModal(true)}
@@ -219,6 +231,9 @@ const Spend = () => {
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modalView}>
+                <Text className=" font-raleway text-xl font-bold self-start ml-10 text-gray-300">
+                  Nouvelle categorie
+                </Text>
                 <TextInput
                   placeholder="Nouvelle catégorie"
                   value={newCategorie}
@@ -231,14 +246,14 @@ const Spend = () => {
                     theme="danger"
                     onPress={() => setOpenModal(false)}
                     styleText="text-lg px-4"
-                    className=" w-36"
+                    className=" w-[120px]"
                   />
                   <Button
                     title="Ajouter"
                     theme="success"
                     onPress={addNewCategory}
                     styleText="text-lg px-4"
-                    className="w-36"
+                    className="w-[120px]"
                   />
                 </View>
               </View>

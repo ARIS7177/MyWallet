@@ -34,6 +34,13 @@ const Tabs = () => {
               isActive={activeTab === "tab3"}
               onPress={() => setActiveTab("tab3")}
             />
+            {/* <Button
+              title="categorie"
+              theme="secondary"
+              isComposed
+              isActive={activeTab === "tab4"}
+              onPress={() => setActiveTab("tab4")}
+            /> */}
           </View>
         </View>
         <View className=" w-full">

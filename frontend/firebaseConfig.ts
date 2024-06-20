@@ -7,7 +7,8 @@ import {
   signInWithPhoneNumber,
   PhoneAuthProvider,
   signInWithCredential,
-  RecaptchaVerifier,
+  setPersistence,
+  Persistence,
 } from "firebase/auth";
 const firebaseConfig = {
   apiKey: "AIzaSyAolxF8zqSV4j00f_mui5cHPkB8uoeMbJY",

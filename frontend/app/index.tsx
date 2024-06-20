@@ -1,20 +1,18 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/firebaseConfig";
+import { onAuthStateChanged, getAuth } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
 import { PhoneProvider } from "@/lib/PhoneContext";
-import { useUser } from "@/stores/user";
+import { auth } from "@/firebaseConfig";
 
 enableScreens();
 
@@ -31,11 +29,23 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
-  const { user, setUser } = useUser();
+  const [user, setUser] = useState<string | null>(null);
+
   useEffect(() => {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
+        // // Vérifier l'état de l'utilisateur avec Firebase Auth
+        // onAuthStateChanged(auth, (currentUser) => {
+        //   if (currentUser) {
+        //     // Utilisateur connecté, vous pouvez stocker son ID ou autre info si nécessaire
+        //     setUser(currentUser.uid);
+        //     AsyncStorage.setItem("userPhone", currentUser.phoneNumber || "");
+        //   } else {
+        //     setUser(null);
+        //     AsyncStorage.removeItem("userPhone");
+        //   }
+        // });
         const storedUserPhone = await AsyncStorage.getItem("userPhone");
         if (storedUserPhone) {
           setUser(storedUserPhone);
@@ -47,7 +57,6 @@ export default function Index() {
       } finally {
         if (fontsLoaded || fontError) {
           setAppIsReady(true);
-          console.log(user);
         }
       }
     }

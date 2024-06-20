@@ -8,6 +8,7 @@ import Transaction from "../screens/authScreens/transaction";
 import CreatePage from "../screens/authScreens/createPage";
 import Stats from "../screens/authScreens/stats";
 import Setting from "../screens/authScreens/setting";
+import CustomHeader from "@/components/customHeader";
 
 interface Props {
   iconType?: "FontAwesome" | "MaterialIcons" | "Ionicons";
@@ -72,7 +73,11 @@ function TabNavigator({ iconType = "Ionicons" }: Props) {
           headerShown: false,
         }}
       />
-      <Tab.Screen name="home" component={HomePage} />
+      <Tab.Screen
+        name="home"
+        component={HomePage}
+        options={{ headerShown: true, headerTitle: () => <CustomHeader /> }}
+      />
       <Tab.Screen name="Stats" component={Stats} />
       <Tab.Screen name="Parametres" component={Setting} />
     </Tab.Navigator>
