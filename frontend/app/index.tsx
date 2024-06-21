@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -5,14 +6,12 @@ import { useCallback, useEffect, useState } from "react";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { enableScreens } from "react-native-screens";
-import { onAuthStateChanged, getAuth } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { PhoneProvider } from "@/lib/PhoneContext";
+import { useUser } from "@/stores/user";
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
-import { PhoneProvider } from "@/lib/PhoneContext";
-import { auth } from "@/firebaseConfig";
 
 enableScreens();
 
@@ -29,8 +28,7 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
-  const [user, setUser] = useState<string | null>(null);
-
+  const { user, setUser } = useUser();
   useEffect(() => {
     async function prepare() {
       try {
