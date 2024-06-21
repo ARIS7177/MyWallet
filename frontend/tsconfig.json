@@ -2,6 +2,8 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "typeRoots": ["./node_modules/@types", "./types"],
+
+    "module": "commonjs",
     "strict": true,
     "jsx": "react-native", // Ajoute cette ligne pour spécifier le JSX pour React Native
     "moduleResolution": "node",

@@ -7,30 +7,33 @@ const Tabs = () => {
   const [activeTab, setActiveTab] = useState("tab1");
   return (
     <ScrollView>
-      <View className=" gap-20 mt-10 justify-centernter">
+      <View className=" gap-10 mt-10 justify-centernter">
         <View className="header gap-4">
           <Text className=" text-russian-950 text-center font-helvitica-bold text-3xl">
             Que voulez-vous creer?
           </Text>
-          <View className="buttons gap-4 flex-row justify-center">
+          <View
+            className="buttons gap-4 flex-row justify-center "
+            style={{ height: 60 }}
+          >
             <Button
-              title="Depense"
+              title="Revenue"
               theme="secondary"
-              isComposed
+              isComposed={true}
               isActive={activeTab === "tab1"}
               onPress={() => setActiveTab("tab1")}
             />
             <Button
-              title="Revenue"
+              title="Depense"
               theme="secondary"
-              isComposed
+              isComposed={true}
               isActive={activeTab === "tab2"}
               onPress={() => setActiveTab("tab2")}
             />
             <Button
               title="Budget"
               theme="secondary"
-              isComposed
+              isComposed={true}
               isActive={activeTab === "tab3"}
               onPress={() => setActiveTab("tab3")}
             />

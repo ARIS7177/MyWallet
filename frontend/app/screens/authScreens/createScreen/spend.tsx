@@ -184,7 +184,7 @@ const Spend = () => {
             control={control}
             name="categorie"
             render={({ field: { onChange, value } }) => (
-              <>
+              <View>
                 <DropDownPicker
                   open={open}
                   value={value}
@@ -216,7 +216,7 @@ const Spend = () => {
                     Créer une nouvelle catégorie
                   </Text>
                 </TouchableOpacity>
-              </>
+              </View>
             )}
           />
           {errors.categorie && (
@@ -236,7 +236,7 @@ const Spend = () => {
           theme="primary"
           styleText="text-white"
           onPress={handleSubmit(createSpend)}
-          className="mt-14"
+          className="mt-20"
         />
       </View>
       <Modal visible={openModal} transparent={true} animationType="slide">

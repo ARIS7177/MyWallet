@@ -13,10 +13,10 @@ const TabsContent = ({ activeTab }: props) => {
 
   switch (activeTab) {
     case "tab1":
-      content = <Spend />;
+      content = <Income />;
       break;
     case "tab2":
-      content = <Income />;
+      content = <Spend />;
       break;
     case "tab3":
       content = <Budget />;
