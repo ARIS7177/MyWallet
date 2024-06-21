@@ -32,9 +32,7 @@ const spendSchema = zod.object({
   description: zod.string().min(3, "entrer la raison de la depense"),
   montant: zod.coerce.number(),
   categorie: zod.string().min(1, "choisissez une catégorie"),
-  newCategorie: zod
-    .string()
-    .min(1, "creer une nouvelle categorie une catégorie"),
+  newCategorie: zod.string().optional(),
 });
 type spendData = zod.infer<typeof spendSchema>;
 
@@ -42,10 +40,10 @@ const Spend = () => {
   const [isLoading, setIsLoading] = useState(false);
   const user = auth.currentUser;
   const [categories, setCategories] = useState([
-    { label: "Alimentation", value: "cat1" },
-    { label: "Transport", value: "cat2" },
-    { label: "Connexion", value: "cat3" },
-    { label: "bien-etre", value: "cat4" },
+    { label: "Alimentation", value: "alimentation" },
+    { label: "Transport", value: "transport" },
+    { label: "Connexion", value: "connexion" },
+    { label: "bien-etre", value: "bien-entre" },
     { label: "creer une nouvelle categorie", value: "create_new_category" },
   ]); // Initial categories
   const [open, setOpen] = useState(false);
@@ -63,6 +61,7 @@ const Spend = () => {
   });
 
   const addNewCategory = async () => {
+    setIsLoading(true);
     if (newCategorie) {
       const newCategory = {
         label: newCategorie,
@@ -71,27 +70,36 @@ const Spend = () => {
       setCategories([...categories, newCategory]);
       setNewCategorie("");
       setOpenModal(false);
+      setIsLoading(false);
 
       // Save new category to Firestore
       if (user) {
-        try {
-          await setDoc(
-            doc(
-              FIREBASE_BD,
-              `users/${user.uid}/categories/${newCategory.value}`
-            ),
-            {
-              name: newCategorie,
-              createdAt: serverTimestamp(),
-            }
+        const timeoutId = setTimeout(() => {
+          setIsLoading(false);
+          console.log("La connexion est mauvaise, veuillez réessayer.");
+          Alert.alert(
+            "Erreur",
+            "La connexion est mauvaise, veuillez réessayer."
           );
+        }, 10000); // 10 seconds timeout
+        try {
+          await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+          clearTimeout(timeoutId);
+          await addDoc(collection(FIREBASE_BD, `categories`), {
+            name: newCategorie,
+            createdAt: serverTimestamp(),
+            phoneNumber: user.phoneNumber,
+          });
         } catch (error: any) {
+          clearTimeout(timeoutId);
           console.error("Error adding category: ", error);
           Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);
         }
       } else {
-        console.log("dont connect !!");
+        console.log("don't connect !!");
       }
+    } else {
+      console.log("Enter new category");
     }
   };
 
@@ -110,13 +118,12 @@ const Spend = () => {
         });
         console.log("Document written with ID: ", docRef.id);
         Alert.alert("succes", "creation de la depense valide");
-        reset();
-        setIsLoading(false);
-        reset();
       } catch (error: any) {
         console.error("Error adding document: ", error);
         Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);
+      } finally {
         setIsLoading(false);
+        reset();
       }
     } else {
       console.log("User is not signed in.");
@@ -139,10 +146,12 @@ const Spend = () => {
             render={({ field: { onChange, onBlur, value } }) => (
               <InputComponent
                 type="default"
+                value={value}
                 placeholder="Entrer un montant"
                 onChangeText={onChange}
                 isIcon={false}
                 errorMessage={errors.montant?.message}
+                keyboard={"phone-pad"}
               />
             )}
           />
@@ -158,6 +167,7 @@ const Spend = () => {
               <InputComponent
                 type="default"
                 placeholder="Entrer un description"
+                value={value}
                 onChangeText={onChange}
                 isIcon={false}
                 className=""
@@ -191,7 +201,10 @@ const Spend = () => {
                   }}
                   setItems={setCategories}
                   placeholder="Sélectionner une catégorie"
-                  style={{ zIndex: 1000, backgroundColor: "#f6f5fd" }}
+                  style={{
+                    zIndex: 1000,
+                    backgroundColor: "#f6f5fd",
+                  }}
                   autoScroll={true}
                   maxHeight={100}
                 />
@@ -277,6 +290,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.1)",
+    borderRadius: 20,
     width: "80%",
     paddingVertical: 20,
   },

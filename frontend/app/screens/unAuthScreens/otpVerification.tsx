@@ -1,341 +1,211 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import {
-  StyleSheet,
-  View,
+  Image,
+  ScrollView,
   Text,
+  View,
   Alert,
   ActivityIndicator,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  FlatList,
-  TouchableWithoutFeedback,
 } from "react-native";
-import Button from "../../../components/Button";
-import * as zod from "zod";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import InputComponent from "../../../components/inputComponent";
-import { FIREBASE_BD, auth } from "@/firebaseConfig";
+import { OtpInput } from "react-native-otp-entry";
+import { RootStackParamList } from "../../navigations/AuthNavigator";
+import Button from "@/components/Button";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import bcrypt from "react-native-bcrypt";
 import {
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
+  FIREBASE_APP,
+  FIREBASE_BD,
+  PhoneAuthProvider,
+  FirebaseRecaptchaVerifierModal,
+  auth,
+  signInWithCredential,
+} from "@/firebaseConfig";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-const spendSchema = zod.object({
-  description: zod.string().min(3, "Entrer la raison de la dépense"),
-  montant: zod.coerce.number(),
-  categorie: zod.string().min(1, "Choisissez une catégorie"),
-  newCategorie: zod
-    .string()
-    .min(1, "Créer une nouvelle catégorie une catégorie"),
-});
-type spendData = zod.infer<typeof spendSchema>;
+type optVerification = RouteProp<RootStackParamList, "Verification">;
+type AuthNavigationPropsStack = StackNavigationProp<RootStackParamList>;
+export default function OtpVerification() {
+  const navigation = useNavigation<AuthNavigationPropsStack>();
+  const route = useRoute<optVerification>();
+  const { name, firstname, phone, birthday, statut, password } = route.params;
 
-const Spend = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const user = auth.currentUser;
-  const [categories, setCategories] = useState([
-    { label: "Alimentation", value: "cat1" },
-    { label: "Transport", value: "cat2" },
-    { label: "Connexion", value: "cat3" },
-    { label: "Bien-être", value: "cat4" },
-    { label: "Créer une nouvelle catégorie", value: "create_new_category" },
-  ]); // Initial categories
-  const [openModal, setOpenModal] = useState(false);
-  const [newCategorie, setNewCategorie] = useState("");
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const recaptchaVerifier = useRef(null);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeSent, setCodeSent] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-  const {
-    setValue,
-    reset,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<spendData>({
-    resolver: zodResolver(spendSchema),
-  });
-
-  const addNewCategory = async () => {
-    if (newCategorie) {
-      const newCategory = {
-        label: newCategorie,
-        value: newCategorie.toLowerCase().replace(/\s+/g, ""),
-      };
-      setCategories([...categories, newCategory]);
-      setNewCategorie("");
-      setOpenModal(false);
-
-      // Save new category to Firestore
-      if (user) {
-        try {
-          await setDoc(
-            doc(
-              FIREBASE_BD,
-              `users/${user.uid}/categories/${newCategory.value}`
-            ),
-            {
-              name: newCategorie,
-              createdAt: serverTimestamp(),
-            }
-          );
-        } catch (error: any) {
-          console.error("Error adding category: ", error);
-          Alert.alert("Erreur", `Une erreur est survenue: ${error.message}`);
-        }
-      } else {
-        console.log("User not connected!!");
+  useEffect(() => {
+    const sendVerificationCode = async () => {
+      setLoading(true);
+      try {
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const id = await phoneProvider.verifyPhoneNumber(
+          `+237${phone}`,
+          recaptchaVerifier.current!
+        );
+        setVerificationId(id);
+        setCodeSent(true);
+        Alert.alert("Succès", "Le code a été envoyé avec succès !");
+        setLoading(false);
+      } catch (error: any) {
+        console.error("Erreur lors de l'envoi du code:", error);
+        setError(`Error: ${error.message}`);
+        setLoading(false);
+        Alert.alert(
+          "Erreur",
+          `Erreur lors de l'envoi du code: ${error.message}`
+        );
       }
+    };
+
+    sendVerificationCode();
+  }, [phone]);
+  console.log("verificationId: ", verificationId);
+
+  const confirmCode = async () => {
+    setLoading(true);
+    try {
+      if (verificationId) {
+        const credential = PhoneAuthProvider.credential(
+          verificationId,
+          verificationCode
+        );
+
+        // Hashing the password before storing it
+        let salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        console.log("hashedPassword", typeof hashedPassword);
+        // Vérifiez si hashedPassword est une chaîne de caractères
+        if (typeof hashedPassword !== "string") {
+          throw new Error(
+            "Le mot de passe haché n'est pas une chaîne de caractères"
+          );
+        }
+        setLoading(true);
+        await signInWithCredential(auth, credential);
+        await setDoc(doc(FIREBASE_BD, "users", `+237${phone}`), {
+          name,
+          firstname,
+          phone: `+237${phone}`,
+          birthday,
+          statut,
+          password: hashedPassword,
+        });
+        navigation.navigate("Main", { screen: "creer" });
+      }
+    } catch (error: any) {
+      setLoading(false);
+      console.error("Erreur lors de la confirmation du code:", error);
+      setError(`Error: ${error.message}`);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de la confirmation du code: ${error.message}`
+      );
     }
   };
 
-  const createSpend = async (data: spendData) => {
-    console.log("data", data);
-
-    if (user) {
-      try {
-        setIsLoading(true);
-        const docRef = await addDoc(collection(FIREBASE_BD, `expenses`), {
-          uid: user.uid,
-          phoneNumber: user.phoneNumber,
-          montant: data.montant,
-          description: data.description,
-          categorie: data.categorie,
-          timestamp: new Date(),
-        });
-        console.log("Document written with ID: ", docRef.id);
-        Alert.alert("Succès", "Création de la dépense valide");
-        reset();
-        setIsLoading(false);
-      } catch (error: any) {
-        console.error("Error adding document: ", error);
-        Alert.alert("Erreur", `Une erreur est survenue: ${error.message}`);
-        setIsLoading(false);
-      }
-    } else {
-      console.log("User is not signed in.");
+  const resendCode = async () => {
+    setLoading(true);
+    setError(null); // Clear any previous error
+    try {
+      const phoneProvider = new PhoneAuthProvider(auth);
+      const id = await phoneProvider.verifyPhoneNumber(
+        `+237${phone}`,
+        recaptchaVerifier.current!
+      );
+      setLoading(false);
+      setVerificationId(id);
+      Alert.alert("Succès", "Le code a été renvoyé avec succès !");
+    } catch (error: any) {
+      console.error("Erreur lors de la réexpédition du code:", error);
+      setError(`Error: ${error.message}`);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de la réexpédition du code: ${error.message}`
+      );
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Créer une nouvelle dépense</Text>
-      <View style={styles.inputs}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Montant</Text>
-          <Controller
-            control={control}
-            name="montant" // Assurez-vous d'avoir le bon nom pour ce champ
-            render={({ field: { onChange, value } }) => (
-              <InputComponent
-                type="default"
-                placeholder="Entrer un montant"
-                onChangeText={onChange}
-                isIcon={false}
-                errorMessage={errors.montant?.message}
-              />
-            )}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Description</Text>
-          <Controller
-            control={control}
-            name="description"
-            render={({ field: { onChange, value } }) => (
-              <InputComponent
-                type="default"
-                placeholder="Entrer une description"
-                onChangeText={onChange}
-                isIcon={false}
-                errorMessage={errors.description?.message}
-              />
-            )}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Catégorie</Text>
-          <Controller
-            control={control}
-            name="categorie"
-            render={({ field: { onChange, value } }) => (
-              <>
-                <TouchableOpacity
-                  style={styles.dropdown}
-                  onPress={() => setCategoryModalVisible(true)}
-                >
-                  <Text>
-                    {selectedCategory || "Sélectionner une catégorie"}
-                  </Text>
-                </TouchableOpacity>
-                {errors.categorie && (
-                  <Text style={{ color: "red" }}>
-                    {errors.categorie.message}
-                  </Text>
-                )}
-              </>
-            )}
-          />
-        </View>
-      </View>
-      <View style={styles.buttons}>
-        <Button
-          title={
-            isLoading ? (
-              <ActivityIndicator size={"large"} color={"#fff"} />
-            ) : (
-              "Créer nouvelle dépense"
-            )
-          }
-          theme="primary"
-          styleText="text-white"
-          onPress={handleSubmit(createSpend)}
-          // style={styles.button}
+    <ScrollView>
+      <View className="containerflex-1  gap-10">
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={FIREBASE_APP.options}
         />
+        <View className="images  p-0 relative w-full ">
+          <Image
+            className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
+            source={require("../../../assets/images/Ellipse.png")}
+            resizeMode="cover"
+          />
+          <Image
+            className=" w-full"
+            source={require("../../../assets/images/verification.png")}
+            resizeMode="cover"
+          />
+        </View>
+        <View className="texts  gap-1  px-4 items-center">
+          <Text className="title font-helvitica-bold text-4xl text-center text-russian-950">
+            Verifier votre numero de téléphone
+          </Text>
+          <Text className="sub_title text-center  text-lg font-raleway">
+            Nous avons envoyé un code au numéro{" "}
+            <Text className=" font-raleway-bold">{phone}</Text> , Entrez le code
+            ci-dessous
+          </Text>
+        </View>
+        <OtpInput
+          numberOfDigits={6}
+          focusColor="#FFC400"
+          focusStickBlinkingDuration={500}
+          onFilled={(text) => setVerificationCode(text)}
+          textInputProps={{
+            accessibilityLabel: "One-Time Password",
+          }}
+          theme={{
+            containerStyle: {
+              paddingHorizontal: 20,
+            },
+            pinCodeContainerStyle: {
+              width: 58,
+              height: 58,
+              borderRadius: 10,
+              backgroundColor: "#f6f5fd",
+            },
+          }}
+        />
+        <View className="buttons px-4 mt-20">
+          <Button
+            title={
+              loading ? (
+                <ActivityIndicator size={"large"} color={"#fff"} />
+              ) : (
+                "S'inscrire"
+              )
+            }
+            theme="primary"
+            styleText="text-white"
+            onPress={confirmCode}
+          />
+          {error && <Text className=" text-red-500">{error}</Text>}
+          <View className="resend flex-row items-center justify-end gap-1">
+            <Text className=" text-gray-400 font-raleway">
+              Vous ne trouvez pas de code?
+            </Text>
+            <Button
+              title="Renvoyer"
+              theme="secondary"
+              styleText=" text-primary-600 text-sm"
+              className="pt-1"
+              onPress={resendCode}
+            />
+          </View>
+        </View>
       </View>
-      <Modal visible={openModal} transparent={true} animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setOpenModal(false)}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.modalView}>
-                <Text style={styles.modalTitle}>Nouvelle catégorie</Text>
-                <TextInput
-                  placeholder="Nouvelle catégorie"
-                  value={newCategorie}
-                  onChangeText={setNewCategorie}
-                  style={styles.input}
-                />
-                <View style={styles.modalButtons}>
-                  <Button
-                    title="Annuler"
-                    theme="danger"
-                    onPress={() => setOpenModal(false)}
-                    styleText="text-lg px-4"
-                    // style={styles.modalButton}
-                  />
-                  <Button
-                    title="Ajouter"
-                    theme="success"
-                    onPress={addNewCategory}
-                    styleText="text-lg px-4"
-                    // style={styles.modalButton}
-                  />
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      <Modal
-        visible={categoryModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
-        <TouchableWithoutFeedback
-          onPress={() => setCategoryModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.modalView}>
-                <FlatList
-                  data={categories}
-                  keyExtractor={(item) => item.value}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.categoryItem}
-                      onPress={() => {
-                        setSelectedCategory(item.label);
-                        setCategoryModalVisible(false);
-                        setValue("categorie", item.value);
-                      }}
-                    >
-                      <Text>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    </View>
+    </ScrollView>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 16,
-  },
-  title: {
-    textAlign: "center",
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  inputs: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: "500",
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 4,
-  },
-  buttons: {
-    marginTop: 16,
-  },
-  button: {
-    marginTop: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.8)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalView: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 8,
-    width: "80%",
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  input: {
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    margin: 10,
-    borderRadius: 5,
-    width: "100%",
-  },
-  modalButtons: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  modalButton: {
-    width: 120,
-  },
-  categoryItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-});
-
-export default Spend;
+}

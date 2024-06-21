@@ -43,6 +43,7 @@ interface inputProps {
   errorMessage?: string; // Nouveau prop pour afficher les messages d'erreur
   personalIcon?: string;
   iconType?: "FontAwesome" | "MaterialIcons" | "Ionicons"; //pour prendre des icons autres part que dans materialIcons
+  keyboard?: any;
 }
 
 export default function InputComponent({
@@ -60,6 +61,7 @@ export default function InputComponent({
   errorMessage, // Recevoir les messages d'erreur
   personalIcon = "error-outline",
   iconType = "MaterialIcons",
+  keyboard = "default",
 }: inputProps) {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
@@ -170,7 +172,7 @@ export default function InputComponent({
             secureTextEntry={
               type === "motdepasse" ? !isVisiblePassword : secureTextEntry
             }
-            keyboardType={"default"}
+            keyboardType={keyboard}
           />
           {isIcon && (
             <TouchableOpacity

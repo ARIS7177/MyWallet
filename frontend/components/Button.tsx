@@ -85,7 +85,12 @@ export default function Button({
                 color={iconColor}
                 name={title}
                 size={28}
-                className="flex-1 items-center justify-center "
+                // className="flex-1 items-center justify-center "
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               />
             ) : (
               title

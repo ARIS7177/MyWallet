@@ -35,7 +35,7 @@ export default function Index() {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
-        // // Vérifier l'état de l'utilisateur avec Firebase Auth
+        // Vérifier l'état de l'utilisateur avec Firebase Auth
         // onAuthStateChanged(auth, (currentUser) => {
         //   if (currentUser) {
         //     // Utilisateur connecté, vous pouvez stocker son ID ou autre info si nécessaire
@@ -49,6 +49,7 @@ export default function Index() {
         const storedUserPhone = await AsyncStorage.getItem("userPhone");
         if (storedUserPhone) {
           setUser(storedUserPhone);
+          console.log(storedUserPhone);
         } else {
           setUser(null);
         }

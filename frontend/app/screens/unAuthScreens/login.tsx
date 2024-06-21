@@ -263,7 +263,11 @@ export default function Login() {
               <Button
                 title={
                   verificationId ? (
-                    "Se connecter"
+                    loading ? (
+                      <ActivityIndicator size={"large"} color={"#e29800"} />
+                    ) : (
+                      "Se connecter"
+                    )
                   ) : loading ? (
                     <ActivityIndicator size={"large"} color={"#e29800"} />
                   ) : (
