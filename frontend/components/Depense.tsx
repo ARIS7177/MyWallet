@@ -5,104 +5,42 @@ import { getBackgroundColorAsync } from 'expo-system-ui';
 import Listedepense from '@/mesPages/Listedepense';
 import { format } from 'date-fns';
 
-const Depense = ({ montant,jour, date,depenseId}:any) => {
-  const [editable, setEditable] = useState(false);
-  const [montantValue, setMontantValue] = useState(montant);
-  const [montantModified, setMontantModified] = useState(false);
-  const [dateValue, setDateValue] = useState(date);
-  const [dateModified, setDateModified] = useState(false);
-  const [jourValue, setJourValue] = useState(jour);
-  const [jourModified, setJourModified] = useState(false);
-
-  const Modifierdep = (depenseId:any) => {
-    setDepenseSelectionnee(depenseId);
-    setEditable(true);
-    setModificationEffectuee(false);
-  };
+const Depense = ({ montant,timestamp,date,depenseId}:any) => {
   
+  const [montantValue, setMontantValue] = useState(montant);
+  
+  const [dateValue, setDateValue] = useState(date);
+ 
+ 
+  const [timestampValue, settimestampValue] = useState(timestamp);
+ 
+
+ 
  
   const [modificationEffectuee, setModificationEffectuee] = useState(false);
 
   const [depenseSelectionnee, setDepenseSelectionnee] = useState(null);
 
-  const ValiderModifications = () => {
-    setEditable(false);
-    if (montantModified) {
-      // Effectuer l'action de sauvegarde du montant modifié
-      // par exemple, appeler une fonction pour mettre à jour la base de données
-      console.log("Montant modifié :", montantValue);
-      setMontantModified(false);
-    }
-    if (jourModified) {
-      // Effectuer l'action de sauvegarde du jour modifié
-      // par exemple, appeler une fonction pour mettre à jour la base de données
-      console.log("Jour modifié :", jourValue);
-      setJourModified(false);
-    }
-    if (dateModified) {
-      // Effectuer l'action de sauvegarde de la date modifiée
-      // par exemple, appeler une fonction pour mettre à jour la base de données
-      console.log("Date modifiée :", dateValue);
-      setDateModified(false);
-    }
-    setModificationEffectuee(true);
-  };
-  
+ 
     return (
       
-      <View style={[styles.depenseContainer, depenseSelectionnee === depenseId && styles.depenseSelectionnee]}>
+      <View style={styles.depenseContainer}>
+
         <View style={{width:'30%',alignItems:'center',}}>
             
+           <Text style={styles.jour}>{timestampValue}</Text>
+           <Text style={styles.date}>{dateValue}</Text> 
         
-        {editable ?(
-              <TextInput style={styles.jour}
-              value={jourValue} 
-              onChangeText={(text) => {
-                setJourValue(text);
-                setJourModified(true);
-              }}
-                />
-        ) : (
-          <Text style={styles.jour}>{jourValue}</Text>
-        )}
-        
-        {editable ?(   
-                <TextInput style={styles.date}
-                value={dateValue}
-                onChangeText={(text) =>  {
-                  setDateValue(text);
-                  setDateModified(true);
-                }}
-                />
-          
-        ) : (
-          <Text style={styles.date}>{dateValue}</Text> 
-        )}
         </View>
-         {editable && !modificationEffectuee && (
-        <TouchableOpacity
-              onPress={ValiderModifications}
-              style={styles.boutonValider}
-            >
-              <Text style={styles.textValider}>Valider</Text>
-            </TouchableOpacity>
-             )}
-        <View style={{width:'30%',alignItems:'flex-end',}}>
 
-            <TouchableOpacity onPress={Modifierdep} style={styles.boutonModifier}>
-              <Feather name="edit" size={20} color="black" />
+             
+        <View style={{width:'30%',alignItems:'flex-end',}}>
+        <TouchableOpacity  style={styles.boutonModifier}>
+              <Feather name="trash" size={20} color="black" />
             </TouchableOpacity>
-            
-            {editable ?(
-                  <TextInput
-                    style={styles.montantEditable}
-                    value={montantValue}
-                    onChangeText={(text) => {setMontantValue(text);setMontantModified(true);}}
-                    keyboardType='numeric'
-                  /> 
-            ) : (
+
               <Text style={styles.montant}>{montantValue}</Text>
-            )}
+            
         </View>
       </View>
     );
