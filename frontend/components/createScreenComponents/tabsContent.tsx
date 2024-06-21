@@ -21,9 +21,9 @@ const TabsContent = ({ activeTab }: props) => {
     case "tab3":
       content = <Budget />;
       break;
-    case "tab4":
-      content = <Category />;
-      break;
+    // case "tab4":
+    //   content = <Category />;
+    //   break;
     default:
       content = "Select a tab";
   }

@@ -36,9 +36,7 @@ function TabNavigator() {
             case "create":
               iconName = focused ? "add-circle" : "add-circle-outline";
               break;
-            case "category":
-              iconName = focused ? "layers" : "layers-outline";
-              break;
+           
             case "stat":
               iconName = focused ? "bar-chart" : "bar-chart-outline";
               break;
@@ -57,8 +55,7 @@ function TabNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="home" component={HomePage} />
-      <Tab.Screen name="transaction" component={Transaction} />
+      
       <Tab.Screen
         name="creer"
         component={CreatePage}
@@ -67,7 +64,9 @@ function TabNavigator() {
           headerTitleAlign: "center",
         }}
       />
-      <Tab.Screen name="categorie" component={Stats} />
+      
+      <Tab.Screen name="transaction" component={Transaction} />
+     <Tab.Screen name="home" component={HomePage} />
       <Tab.Screen name="stat" component={Stats} />
       <Tab.Screen name="parametre" component={Setting} />
     </Tab.Navigator>

@@ -42,16 +42,14 @@ function Transactions  ({isActive=false}:props)  {
       <View style={{width:'100%',height:'80%',}}>
       <PageSwitcher page={page}/>
     </View>
-    <View style={styles.barre}>
-
-    </View>
+    
     </View>
     </SafeAreaView>
   );
 };
 const styles = {
     container: {
-      height:'100%',
+      height:'110%',
       width:'100%', 
       backgroundColor:'white',
      
@@ -65,11 +63,7 @@ const styles = {
       paddingHorizontal:'15%'
   },
 
-  barre:{
-    height:'10%',
-    backgroundColor:'gray',
-    
-  },
+ 
 //   container: {
 //     flexDirection: 'row',
 //     justifyContent: 'space-between',
