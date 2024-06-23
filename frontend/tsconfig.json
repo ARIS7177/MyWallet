@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
     },
     "skipLibCheck": true, // Optionnelle, mais peut aider à ignorer certaines vérifications de type des fichiers de bibliothèque
     "allowSyntheticDefaultImports": true,

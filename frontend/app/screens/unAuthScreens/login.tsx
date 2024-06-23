@@ -34,6 +34,8 @@ import { RootStackParamList } from "../../navigations/AuthNavigator";
 import { PhoneContext, usePhoneContext } from "@/lib/PhoneContext";
 import { OtpInput } from "react-native-otp-entry";
 import { useVerificationId } from "@/stores/verificationId";
+import { setPersistence } from "firebase/auth";
+import { useUser } from "@/stores/user";
 
 const signInSchema = z.object({
   phone: z.string().min(9, "Numéro de téléphone invalide").max(9),
@@ -55,7 +57,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   // const { verificationId, setVerificationId } = useVerificationId();
-
+const setUser = useUser(state => state.setUser)
   const {
     control,
     handleSubmit,
@@ -129,8 +131,12 @@ export default function Login() {
           code // You need to get this code from the user input
         );
         // Step 3: Sign in the user with the credential
+        
         const resultSignIn = await signInWithCredential(auth, credential);
-        await AsyncStorage.setItem("credentials", JSON.stringify(resultSignIn));
+        const token = await resultSignIn.user.getIdToken();
+        setUser(resultSignIn.user);
+        
+        console.log("token", token);
         // console.log(await AsyncStorage.getItem("credentials"));
         // console.log("resultSignIn", resultSignIn);
         await AsyncStorage.setItem("userPhone", data.phone); // Stocker l'identifiant localement
