@@ -18,6 +18,7 @@ import {
   getAuth,
   reauthenticateWithCredential,
   signInWithCredential,
+  signInWithCustomToken,
 } from "firebase/auth";
 // import { auth } from "@/firebaseConfig";
 
@@ -54,27 +55,12 @@ export default function Index() {
         //     AsyncStorage.removeItem("userPhone");
         //   }
         // });
-        const storedUserPhone = await AsyncStorage.getItem("userPhone");
-        if (storedUserPhone) {
-          setUser(storedUserPhone);
-          console.log(storedUserPhone);
+        const storedUser = await AsyncStorage.getItem("user");
+        console.log("storedUserPhone", storedUser);
+        if (storedUser) {
+          setUser(storedUser);
         } else {
           setUser(null);
-        }
-        const jsonCredentials = await AsyncStorage.getItem("credentials");
-        console.log("jsonCredentials", jsonCredentials);
-        if (jsonCredentials) {
-          const credentials = JSON.parse(jsonCredentials);
-
-          console.log("crendentials", credentials);
-          const auth = getAuth();
-          const user = auth.currentUser;
-          if (user) {
-            await reauthenticateWithCredential(user, credentials);
-          } else {
-            console.log("dont connect");
-          }
-          console.log("fin");
         }
       } catch (e) {
         console.warn({ e });

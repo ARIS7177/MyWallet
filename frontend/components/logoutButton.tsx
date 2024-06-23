@@ -17,7 +17,7 @@ const LogoutButton = () => {
     try {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
       setUser(null);
-      await AsyncStorage.removeItem("userPhone");
+      await AsyncStorage.removeItem("user");
       // await signOut(auth);
       navigation.navigate("login");
       // navigation.reset({

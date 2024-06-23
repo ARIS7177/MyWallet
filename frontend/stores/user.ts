@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 type IUserState = {
@@ -6,7 +7,10 @@ type IUserState = {
 };
 const useUser = create<IUserState>((set) => ({
   user: null,
-  setUser: (user) => set(() => ({ user })),
+  setUser: (user) => {
+    AsyncStorage.setItem("user", JSON.stringify(user));
+    set(() => ({ user }));
+  },
 }));
 
 export { useUser };
