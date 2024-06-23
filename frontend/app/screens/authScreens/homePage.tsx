@@ -117,23 +117,23 @@ export default function HomePage() {
   const renderItem = ({ item }) => (
     <View className=" bg-[#FFFFEA] py-3 px-1 w-60  rounded-xl items-center border-[0.3px] border-wild_sald-500">
       <View className="gap-3">
-        <Text className=" font-helvitica text-lg">{item.categorie}</Text>
-        <Text className=" font-raleway-bold text-2xl" numberOfLines={2}>
+        <Text className=" font-helvitica text-sm">{item.categorie}</Text>
+        <Text className=" font-raleway-bold text-xl" numberOfLines={2}>
           {item.description}
         </Text>
-        <Text className=" font-raleway-bold text-primary-600 text-2xl">
+        <Text className=" font-raleway-bold text-primary-600 text-xl">
           {item.montant}
         </Text>
         <View className="date flex-row gap-3 items-center">
           <View className="circle bg-green-700 w-4 h-4 rounded-full items-center"></View>
-          <Text className=" font-raleway-bold text-wild_sald-500 text-xl">
+          <Text className=" font-raleway-bold text-wild_sald-500 text-sm">
             {item.date}
           </Text>
         </View>
       </View>
     </View>
   );
-  const ItemSeparator = () => <View className="w-1" />;
+  const ItemSeparator = () => <View className="w-3" />;
 
   //economy
   const renderItemEconomy = ({ item }) => (
@@ -141,16 +141,16 @@ export default function HomePage() {
       className="w-full rounded-2xl p-4"
       style={[styles.shadow, { width: screenWidth - 25 }]}
     >
-      <View className="left  gap-3 " style={{ width: screenWidth - 150 }}>
-        <Text className=" text-wild_sald-500 text-2xl font-raleway-bold ">
+      <View className="left  gap-2 " style={{ width: screenWidth - 150 }}>
+        <Text className=" text-wild_sald-500 text-lg font-raleway-bold ">
           {item.mois}
         </Text>
-        <Text className=" font-raleway-medium text-wild_sald-950 text-2xl font-semibold">
+        <Text className=" font-raleway-medium text-wild_sald-950 text-xl font-semibold">
           Bravo vous avez fais des economies de{" "}
         </Text>
         <Text className=" text-wild_sald-500 text-xl font-raleway-bold">
           Total :{" "}
-          <Text className="text-primary-600 text-3xl font-raleway-bold">
+          <Text className="text-primary-600 text-xl font-raleway-bold">
             {item.montant}
           </Text>{" "}
         </Text>
@@ -165,11 +165,11 @@ export default function HomePage() {
       className="w-full rounded-2xl p-4"
       style={[styles.shadow, { width: screenWidth - 25 }]}
     >
-      <View className=" gap-3 " style={{ width: screenWidth }}>
+      <View className=" gap-1" style={{ width: screenWidth }}>
         <Text className=" text-wild_sald-500 text-2xl font-raleway-bold ">
           {item.mois}
         </Text>
-        <Text className=" font-raleway-medium text-wild_sald-950 text-2xl font-semibold">
+        <Text className=" font-raleway-medium text-wild_sald-950 text-xl font-semibold">
           Economiser 20% de mon revenue
         </Text>
       </View>
@@ -187,11 +187,11 @@ export default function HomePage() {
             <Text className=" font-raleway-medium text-xl">Bon retour !!!</Text>
           </View>
           <View className="budget justify-center border-[0.5px] border-gray-400 items-center rounded-3xl mx-5 bg-purple-100">
-            <View className=" py-10">
-              <Text className=" font-raleway-bold text-2xl text-center">
+            <View className=" py-10 border">
+              <Text className=" font-raleway-bold text-xl text-center">
                 Votre solde actuel :{" "}
               </Text>
-              <Text className=" font-raleway-bold text-[45px] text-primary-600">
+              <Text className=" font-raleway-bold text-[30px] text-primary-600">
                 50000 Fcfa{" "}
               </Text>
             </View>

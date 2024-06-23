@@ -63,6 +63,8 @@ const ResetPassword = () => {
     try {
       auth.onAuthStateChanged((user) => {
         if (user) {
+          console.log(data.password);
+
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(data.password, salt);
 

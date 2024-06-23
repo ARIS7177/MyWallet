@@ -129,7 +129,10 @@ export default function Login() {
           code // You need to get this code from the user input
         );
         // Step 3: Sign in the user with the credential
-        await signInWithCredential(auth, credential);
+        const resultSignIn = await signInWithCredential(auth, credential);
+        await AsyncStorage.setItem("credentials", JSON.stringify(resultSignIn));
+        // console.log(await AsyncStorage.getItem("credentials"));
+        // console.log("resultSignIn", resultSignIn);
         await AsyncStorage.setItem("userPhone", data.phone); // Stocker l'identifiant localement
         reset();
       } else {

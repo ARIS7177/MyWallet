@@ -12,6 +12,13 @@ import { useUser } from "@/stores/user";
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
+import {
+  PhoneAuthCredential,
+  getAuth,
+  reauthenticateWithCredential,
+  signInWithCredential,
+} from "firebase/auth";
+// import { auth } from "@/firebaseConfig";
 
 enableScreens();
 
@@ -51,8 +58,23 @@ export default function Index() {
         } else {
           setUser(null);
         }
+        const jsonCredentials = await AsyncStorage.getItem("credentials");
+        console.log("jsonCredentials", jsonCredentials);
+        if (jsonCredentials) {
+          const credentials = JSON.parse(jsonCredentials);
+
+          console.log("crendentials", credentials);
+          const auth = getAuth();
+          const user = auth.currentUser;
+          if (user) {
+            await reauthenticateWithCredential(user, credentials);
+          } else {
+            console.log("dont connect");
+          }
+          console.log("fin");
+        }
       } catch (e) {
-        console.warn(e);
+        console.warn({ e });
       } finally {
         if (fontsLoaded || fontError) {
           setAppIsReady(true);
