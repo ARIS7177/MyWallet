@@ -230,7 +230,7 @@ const Spend = () => {
             isLoading ? (
               <ActivityIndicator size={"large"} color={"#fff"} />
             ) : (
-              "Creer nouvelle depense"
+              "Valider"
             )
           }
           theme="primary"

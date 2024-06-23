@@ -23,19 +23,20 @@ const Tabs = () => {
               isActive={activeTab === "tab1"}
               onPress={() => setActiveTab("tab1")}
             />
-            <Button
-              title="Depense"
-              theme="secondary"
-              isComposed={true}
-              isActive={activeTab === "tab2"}
-              onPress={() => setActiveTab("tab2")}
-            />
+
             <Button
               title="Budget"
               theme="secondary"
               isComposed={true}
               isActive={activeTab === "tab3"}
               onPress={() => setActiveTab("tab3")}
+            />
+            <Button
+              title="Depense"
+              theme="secondary"
+              isComposed={true}
+              isActive={activeTab === "tab2"}
+              onPress={() => setActiveTab("tab2")}
             />
             {/* <Button
               title="categorie"

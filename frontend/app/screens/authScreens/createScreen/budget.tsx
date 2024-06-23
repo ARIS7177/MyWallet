@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
   Text,
   Platform,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import Button from "../../../../components/Button";
 import * as zod from "zod";
@@ -14,13 +16,18 @@ import InputComponent from "../../../../components/inputComponent";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-
+import { User, onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_BD, auth } from "@/firebaseConfig";
+import { addDoc, collection } from "firebase/firestore";
 const budgetSchema = zod
   .object({
-    montant: zod.coerce.number(),
-    startDate: zod.date().refine((date) => date >= new Date(), {
-      message: "La date doit être supérieure ou égale à aujourd'hui",
-    }),
+    montant: zod.coerce.number().min(100, "montant minimum 100f"),
+    objectif: zod.string().optional(),
+    startDate: zod
+      .date()
+      .refine((date) => date === new Date() || date >= new Date(), {
+        message: "La date doit être supérieure ou égale à aujourd'hui",
+      }),
     endDate: zod.date(),
   })
   .refine((data) => data.endDate > data.startDate, {
@@ -36,7 +43,14 @@ const Budget = () => {
   } = useForm<budgetData>({
     resolver: zodResolver(budgetSchema),
   });
-
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] =
     useState(false);
   const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
@@ -68,8 +82,29 @@ const Budget = () => {
       }
     };
 
-  const onSubmit = (data: budgetData) => {
+  const onSubmit = async (data: budgetData) => {
     console.log("data", data);
+    setIsLoading(true);
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(FIREBASE_BD, "budgets"), {
+          montant: data.montant,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          objectif: data.objectif,
+          uid: user.uid,
+        });
+        console.log("Document written with ID: ", docRef.id);
+        Alert.alert("succes", "creation de la depense valide");
+      } catch (error: any) {
+        console.error("Error adding document: ", error);
+        Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      console.log("User not authenticated");
+    }
   };
   return (
     <View className="containers w-full px-4 gap-10  flex-1">
@@ -98,6 +133,29 @@ const Budget = () => {
             {errors.montant && (
               <Text className=" text-rose-600 mt-1">
                 {errors.montant.message}
+              </Text>
+            )}
+          </View>
+          <View className="desc gap-2  w-full">
+            <Text className=" text-russian-950 text-lg font-raleway-medium">
+              Objectif{" "}
+              <Text className="text-sm text-wild_sald-500">(Optionel)</Text>
+            </Text>
+            <Controller
+              control={control}
+              name="objectif" // Assurez-vous d'avoir le bon nom pour ce champ
+              render={({ field: { onChange, onBlur, value } }) => (
+                <InputComponent
+                  type="default"
+                  placeholder="Entrer votre objectif"
+                  onChangeText={onChange}
+                  isIcon={false}
+                />
+              )}
+            />
+            {errors.objectif && (
+              <Text className=" text-rose-600 mt-1">
+                {errors.objectif.message}
               </Text>
             )}
           </View>
@@ -164,7 +222,13 @@ const Budget = () => {
           </View>
         </View>
         <Button
-          title="Soumettre"
+          title={
+            isLoading ? (
+              <ActivityIndicator size={"large"} color={"#fff"} />
+            ) : (
+              "Valider"
+            )
+          }
           onPress={handleSubmit(onSubmit)}
           theme={"primary"}
           className="mt-8"
