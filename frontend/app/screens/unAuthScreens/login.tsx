@@ -170,6 +170,7 @@ export default function Login() {
           <FirebaseRecaptchaVerifierModal
             ref={recaptchaVerifier}
             firebaseConfig={FIREBASE_APP.options}
+            attemptInvisibleVerification={true}
           />
           <View className="images  p-0 relative w-full -mt-10">
             <Image

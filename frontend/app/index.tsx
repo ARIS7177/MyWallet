@@ -12,6 +12,7 @@ import { useUser } from "@/stores/user";
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
+import NativeWind from "nativewind";
 import {
   PhoneAuthCredential,
   getAuth,
@@ -36,12 +37,14 @@ export default function Index() {
   });
 
   const { user, setUser } = useUser();
+  console.log(user);
   useEffect(() => {
     async function prepare() {
       try {
-        await SplashScreen.preventAutoHideAsync();
+        // Initialisation de NativeWind
+        NativeWind.verifyInstallation();
         // Vérifier l'état de l'utilisateur avec Firebase Auth
-        // onAuthStateChanged(auth, (currentUser) => {
+        // onAuthStateChanged(xauth, (currentUser) => {
         //   if (currentUser) {
         //     // Utilisateur connecté, vous pouvez stocker son ID ou autre info si nécessaire
         //     setUser(currentUser.uid);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootTabParamList } from "@/app/navigations/Tabnavigator";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import CustomHeader from "@/components/customHeader";
+import { User } from "firebase/auth";
+import { fetchUserBudgets, fetchUserDatas } from "@/components/getItems";
+import { useUser } from "@/stores/user";
 
 type homePageProp = RouteProp<RootTabParamList, "home">;
 export default function HomePage() {
+  const { user, setUser } = useUser();
   const route = useRoute<homePageProp>();
   // const { phone } = route.params;
+  const [userDatas, setUserDatas] = useState<any[]>([]);
   const datas = [
     {
       id: "1",
@@ -159,7 +164,7 @@ export default function HomePage() {
     </View>
   );
 
-  //economy
+  //objectifs
   const renderItemObjectif = ({ item }) => (
     <View
       className="w-full rounded-2xl p-4"
@@ -175,6 +180,20 @@ export default function HomePage() {
       </View>
     </View>
   );
+  console.log(user);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        try {
+          const userDatas = await fetchUserDatas(user);
+          setUserDatas(userDatas);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des budgets :", error);
+        }
+      }
+    };
+    fetchData;
+  }, [user]);
   return (
     <View className="container flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
@@ -187,7 +206,7 @@ export default function HomePage() {
             <Text className=" font-raleway-medium text-xl">Bon retour !!!</Text>
           </View>
           <View className="budget justify-center border-[0.5px] border-gray-400 items-center rounded-3xl mx-5 bg-purple-100">
-            <View className=" py-10 border">
+            <View className=" py-10 ">
               <Text className=" font-raleway-bold text-xl text-center">
                 Votre solde actuel :{" "}
               </Text>

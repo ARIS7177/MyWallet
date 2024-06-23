@@ -199,14 +199,17 @@ export default function Signup({ navigation }: any) {
                   onSelect={(selectedItem) => {
                     onChange(selectedItem.title as string);
                     console.log(
-                      "selectedItem",
+                      "selectedItem :",
                       selectedItem.title,
                       typeof selectedItem.title
                     );
                   }}
                   renderButton={(selectedItem, isOpened) => {
                     return (
-                      <View className=" w-full h-16 border-[0.5px] border-[#292929] bg-purple-50 rounded-xl flex-row justify-between items-center gap-10 px-5">
+                      <View
+                        className=" w-full h-16 border-[0.5px] border-[#292929] bg-purple-50 rounded-xl flex-row justify-between items-center gap-10 px-5"
+                        style={{ height: 64, paddingHorizontal: 20 }}
+                      >
                         <Text className="text-xl font-helvitica text-[#151E26]">
                           {(selectedItem && selectedItem.title) ||
                             "selectionner votre statut"}
