@@ -1,4 +1,4 @@
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
+// Vous pouvez explorer les familles d'icônes et les icônes intégrées sur le Web à l'adresse https://icons.expo.fyi/
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { type IconProps } from '@expo/vector-icons/build/createIconSet';
