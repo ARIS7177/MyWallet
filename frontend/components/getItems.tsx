@@ -22,11 +22,29 @@ export const fetchUserBudgets = async (user: User) => {
   return userBudgets;
 };
 
+//get expenses by user
+export const fetchUserExpenses = async (user: User) => {
+  const q = query(
+    collection(FIREBASE_BD, "expenses"),
+    where("phoneNumber", "==", `${user.phoneNumber}`)
+  );
+  const querySnapshot = await getDocs(q);
+  const userExpenses = querySnapshot.docs.map((doc) => doc.data());
+  console.log("User Expenses: ", userExpenses);
+  return userExpenses;
+};
+
 //get user by id
-export const fetchUserDatas = async (user: User) => {
+export const fetchUserDatas = async (user: User | any) => {
+  if (!user.uid) {
+    const userObject = JSON.parse(user);
+    console.log("userObject", userObject);
+    throw new Error("L'id' de l'utilisateur n'est pas défini.");
+  }
+  console.log("user: ", { user });
   const q = query(
     collection(FIREBASE_BD, "users"),
-    where("iud", "==", user.uid)
+    where("phone", "==", `${user.phoneNumber}`)
   );
   const querySnapshot = await getDocs(q);
   const userDatas = querySnapshot.docs.map((doc) => doc.data());

@@ -38,12 +38,11 @@ export default function Index() {
   });
 
   const { user, setUser } = useUser();
-  console.log(user);
+  // console.log(user);
   useEffect(() => {
     async function prepare() {
       try {
         // Initialisation de NativeWind
-        NativeWind.verifyInstallation();
         // Vérifier l'état de l'utilisateur avec Firebase Auth
         // onAuthStateChanged(xauth, (currentUser) => {
         //   if (currentUser) {
@@ -56,9 +55,11 @@ export default function Index() {
         //   }
         // });
         const storedUser = await AsyncStorage.getItem("user");
-        console.log("storedUserPhone", storedUser);
+        console.log("storedUser", storedUser);
         if (storedUser) {
-          setUser(storedUser);
+          const storeUserObject = JSON.parse(storedUser);
+          setUser(storeUserObject);
+          console.log("user", user);
         } else {
           setUser(null);
         }
@@ -87,7 +88,7 @@ export default function Index() {
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
         <PhoneProvider>
-          {user ? <TabNavigator /> : <AuthNavigator />}
+          {user != null ? <TabNavigator /> : <AuthNavigator />}
         </PhoneProvider>
       </NavigationContainer>
     </SafeAreaProvider>

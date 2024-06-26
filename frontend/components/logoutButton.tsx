@@ -18,12 +18,12 @@ const LogoutButton = () => {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
       setUser(null);
       await AsyncStorage.removeItem("user");
-      // await signOut(auth);
-      navigation.navigate("login");
-      // navigation.reset({
-      //   index: 0,
-      //   routes: [{ name: "login" }],
-      // });
+      await signOut(auth);
+      // navigation.navigate("login");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "login" }],
+      });
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }

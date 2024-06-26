@@ -6,14 +6,20 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootTabParamList } from "@/app/navigations/Tabnavigator";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import CustomHeader from "@/components/customHeader";
 import { User } from "firebase/auth";
-import { fetchUserBudgets, fetchUserDatas } from "@/components/getItems";
+import {
+  fetchUserBudgets,
+  fetchUserDatas,
+  fetchUserExpenses,
+} from "@/components/getItems";
 import { useUser } from "@/stores/user";
+import { auth } from "@/firebaseConfig";
 
 type homePageProp = RouteProp<RootTabParamList, "home">;
 export default function HomePage() {
@@ -21,6 +27,47 @@ export default function HomePage() {
   const route = useRoute<homePageProp>();
   // const { phone } = route.params;
   const [userDatas, setUserDatas] = useState<any[]>([]);
+  const [userExpenses, setUserExpenses] = useState<any[]>([]);
+
+  // Fonction pour convertir l'horodatage en une date lisible
+  const convertTimestampToDate = (timestamp) => {
+    const milliseconds =
+      timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
+    const date = new Date(milliseconds);
+    const jour = date.getDate();
+    const mois = date.getMonth() + 1; // Les mois sont de 0 à 11
+    const annee = date.getFullYear();
+    return `${jour}/${mois}/${annee}`;
+  };
+  // console.log(user);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        // console.log("here");
+        try {
+          const userDatas = await fetchUserDatas(user);
+          const userExpenses = await fetchUserExpenses(user);
+          // Convertir les horodatages
+          const formattedExpenses = userExpenses.map((expense) => ({
+            ...expense,
+            formattedDate: convertTimestampToDate(expense.timestamp),
+          }));
+          setUserDatas(userDatas);
+          setUserExpenses(formattedExpenses);
+          console.log("Données de l'utilisateur :", userDatas); // Afficher les données récupérées
+          console.log("userDatas[0]", userDatas[0].name);
+          console.log("userExpenses", formattedExpenses);
+          console.log(formattedExpenses[0].formattedDate);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des userData :", error);
+        }
+      } else {
+        console.log("don't have user");
+      }
+    };
+    fetchData();
+  }, [user]);
+
   const datas = [
     {
       id: "1",
@@ -121,18 +168,18 @@ export default function HomePage() {
   const { width: screenWidth } = Dimensions.get("window");
   const renderItem = ({ item }) => (
     <View className=" bg-[#FFFFEA] py-3 px-1 w-60  rounded-xl items-center border-[0.3px] border-wild_sald-500">
-      <View className="gap-3">
+      <View className="gap-3  justify-between ">
         <Text className=" font-helvitica text-sm">{item.categorie}</Text>
         <Text className=" font-raleway-bold text-xl" numberOfLines={2}>
           {item.description}
         </Text>
         <Text className=" font-raleway-bold text-primary-600 text-xl">
-          {item.montant}
+          {item.montant} Fcfa
         </Text>
         <View className="date flex-row gap-3 items-center">
           <View className="circle bg-green-700 w-4 h-4 rounded-full items-center"></View>
           <Text className=" font-raleway-bold text-wild_sald-500 text-sm">
-            {item.date}
+            {item.formattedDate}
           </Text>
         </View>
       </View>
@@ -180,20 +227,12 @@ export default function HomePage() {
       </View>
     </View>
   );
-  console.log(user);
-  useEffect(() => {
-    const fetchData = async () => {
-      if (user) {
-        try {
-          const userDatas = await fetchUserDatas(user);
-          setUserDatas(userDatas);
-        } catch (error) {
-          console.error("Erreur lors de la récupération des budgets :", error);
-        }
-      }
-    };
-    fetchData;
-  }, [user]);
+
+  console.log(userExpenses);
+  const name = userDatas.length !== 0 ? userDatas[0].name : "";
+  const firstname = userDatas.length !== 0 ? userDatas[0].firstname : "";
+  const expenseNumbers = userExpenses.length !== 0 ? userExpenses.length : 3;
+
   return (
     <View className="container flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
@@ -201,7 +240,12 @@ export default function HomePage() {
         <View className="subContainer gap-5 px-3">
           <View className="salutations mt-5 ">
             <Text className=" font-helvitica-bold text-2xl">
-              Hello, Mr Aristide
+              Hello, Mr{" "}
+              {userDatas.length !== 0 ? (
+                `${name} ${firstname}`
+              ) : (
+                <ActivityIndicator color={"orange"} size={"small"} />
+              )}
             </Text>
             <Text className=" font-raleway-medium text-xl">Bon retour !!!</Text>
           </View>
@@ -222,12 +266,16 @@ export default function HomePage() {
               </Text>
               <View className="circle rounded-full w-8 h-8 border border-gray-400 justify-end items-center bg-gray-300">
                 <Text className=" text-pink-600  text-lg text-center font-bold">
-                  3
+                  {userExpenses.length !== 0 ? (
+                    expenseNumbers
+                  ) : (
+                    <ActivityIndicator color={"orange"} size={"small"} />
+                  )}
                 </Text>
               </View>
             </View>
             <FlatList
-              data={datas}
+              data={userExpenses.length !== 0 ? userExpenses : datas}
               renderItem={renderItem}
               keyExtractor={(item) => item.id}
               horizontal={true}

@@ -57,7 +57,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   // const { verificationId, setVerificationId } = useVerificationId();
-const setUser = useUser(state => state.setUser)
+  const setUser = useUser((state) => state.setUser);
   const {
     control,
     handleSubmit,
@@ -131,11 +131,11 @@ const setUser = useUser(state => state.setUser)
           code // You need to get this code from the user input
         );
         // Step 3: Sign in the user with the credential
-        
+
         const resultSignIn = await signInWithCredential(auth, credential);
         const token = await resultSignIn.user.getIdToken();
         setUser(resultSignIn.user);
-        
+
         console.log("token", token);
         // console.log(await AsyncStorage.getItem("credentials"));
         // console.log("resultSignIn", resultSignIn);

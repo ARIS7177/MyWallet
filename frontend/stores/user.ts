@@ -8,7 +8,8 @@ type IUserState = {
 const useUser = create<IUserState>((set) => ({
   user: null,
   setUser: (user) => {
-    AsyncStorage.setItem("user", JSON.stringify(user));
+    const userString = JSON.stringify(user);
+    AsyncStorage.setItem("user", userString);
     set(() => ({ user }));
   },
 }));

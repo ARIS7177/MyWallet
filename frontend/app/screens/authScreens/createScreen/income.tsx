@@ -29,6 +29,7 @@ const Income = () => {
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<incomeData>({
     resolver: zodResolver(incomeSchema),
@@ -52,6 +53,7 @@ const Income = () => {
           source: data.source,
           uid: user.uid,
         });
+        reset();
         console.log("Document written with id: ", docRef);
         Alert.alert("succes", "creation de la depense valide");
       } catch (error: any) {
