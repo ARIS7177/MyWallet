@@ -47,6 +47,7 @@ function TabNavigator() {
         },
         tabBarActiveTintColor: "#E29800",
         tabBarInactiveTintColor: "gray",
+        headerTitleStyle: { flex: 1 },
       })}
     >
       <Tab.Screen name="transaction" component={Transaction} />
@@ -61,7 +62,10 @@ function TabNavigator() {
       <Tab.Screen
         name="home"
         component={HomePage}
-        options={{ headerShown: true, headerTitle: () => <CustomHeader /> }}
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader />,
+        }}
       />
       <Tab.Screen name="stat" component={Stats} />
       <Tab.Screen name="parametre" component={Setting} />

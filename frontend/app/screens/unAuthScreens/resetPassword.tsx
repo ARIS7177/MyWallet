@@ -84,8 +84,8 @@ const ResetPassword = () => {
   return (
     <ScrollView className="">
       <TouchableNativeFeedback onPress={Keyboard.dismiss}>
-        <View className="container flex-1 gap-10 mt-10 justify-center px-3">
-          <View className="header justify-center">
+        <View className="container flex-1 gap-20 mt-10 justify-center px-3 ">
+          <View className="header justify-center px-2">
             <Text className="text-4xl font-helvitica-bold text-center">
               Creer un nouveau nom de passe
             </Text>
@@ -93,52 +93,54 @@ const ResetPassword = () => {
               Votre nouveau mot de passe doit etre different de l’ancien
             </Text>
           </View>
-          <View className="inputs gap-5">
-            <Controller
-              name="password"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <InputComponent
-                  type="motdepasse"
-                  placeholder="Mot de passe"
-                  onChangeText={onChange}
-                  secureTextEntry={true}
-                  isIcon={true}
-                  value={value}
-                  errorMessage={errors.password?.message}
-                  iconStyle="absolute right-1 bottom-1 p-2 "
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <InputComponent
-                  type="motdepasse"
-                  placeholder="confirmer Mot de passe"
-                  onChangeText={onChange}
-                  secureTextEntry={true}
-                  isIcon={true}
-                  value={value}
-                  errorMessage={errors.confirmPassword?.message}
-                  iconStyle=" absolute right-1 bottom-1 p-2 "
-                />
-              )}
+          <View className="body flex-1 gap-20">
+            <View className="inputs gap-5">
+              <Controller
+                name="password"
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <InputComponent
+                    type="motdepasse"
+                    placeholder="Mot de passe"
+                    onChangeText={onChange}
+                    secureTextEntry={true}
+                    isIcon={true}
+                    value={value}
+                    errorMessage={errors.password?.message}
+                    iconStyle="absolute right-1 bottom-1 p-2 "
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <InputComponent
+                    type="motdepasse"
+                    placeholder="confirmer Mot de passe"
+                    onChangeText={onChange}
+                    secureTextEntry={true}
+                    isIcon={true}
+                    value={value}
+                    errorMessage={errors.confirmPassword?.message}
+                    iconStyle=" absolute right-1 bottom-1 p-2 "
+                  />
+                )}
+              />
+            </View>
+            <Button
+              title={
+                isLoading ? (
+                  <ActivityIndicator color={"#fff"} size={"large"} />
+                ) : (
+                  "Renitialiser"
+                )
+              }
+              theme="primary"
+              styleText=" text-white"
+              onPress={handleSubmit(handleResetPassword)}
             />
           </View>
-          <Button
-            title={
-              isLoading ? (
-                <ActivityIndicator color={"#fff"} size={"large"} />
-              ) : (
-                "Renitialiser"
-              )
-            }
-            theme="primary"
-            styleText=" text-white"
-            onPress={handleSubmit(handleResetPassword)}
-          />
         </View>
       </TouchableNativeFeedback>
     </ScrollView>

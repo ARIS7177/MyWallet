@@ -88,7 +88,7 @@ export default function Index() {
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
         <PhoneProvider>
-          {user != null ? <TabNavigator /> : <AuthNavigator />}
+          {user !== null ? <TabNavigator /> : <AuthNavigator />}
         </PhoneProvider>
       </NavigationContainer>
     </SafeAreaProvider>
