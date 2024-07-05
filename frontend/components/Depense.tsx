@@ -4,6 +4,26 @@ import { Feather } from '@expo/vector-icons';
 import { getBackgroundColorAsync } from 'expo-system-ui';
 import Listedepense from '@/mesPages/Listedepense';
 import { format } from 'date-fns';
+import { collection, doc, deleteDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+
+// Fonction de suppression de dépense dans le composant parent
+const supprimerDepense = async ( depenseId) => {
+  try {
+    const FIREBASE_BD  = getFirestore(); // Obtenir l'instance de la base de données Firestore
+    const depenseRef = doc(collection(FIREBASE_BD , 'expenses'), depenseId); // Référence a la collection de la dépense
+
+    await deleteDoc(depenseRef); // Supprimer le document correspondant a l'id de la dépense 
+
+    console.log('La dépense a été supprimée avec succès !');
+    //toute autre action nécessaire après la suppression de la dépense, par exemple, mettre à jour l'état du composant parent ou recharger les données.
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la dépense :', error);
+    // Gérer les erreurs de suppression de la dépense ici
+  }
+};
+
+
 
 const Depense = ({ montant,timestamp,date,depenseId}:any) => {
   
@@ -35,7 +55,7 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
 
              
         <View style={{width:'30%',alignItems:'flex-end',}}>
-        <TouchableOpacity  style={styles.boutonModifier}>
+        <TouchableOpacity  style={styles.boutonModifier} onPress={supprimerDepense}>
               <Feather name="trash" size={20} color="black" />
             </TouchableOpacity>
 

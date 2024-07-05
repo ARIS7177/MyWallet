@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{useState}from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { getBackgroundColorAsync } from 'expo-system-ui';
@@ -6,15 +6,26 @@ import Listedepense from '@/mesPages/Listedepense';
 
 
 
-const Revenue = ({ montant,jour, date }:any) => {
+const Revenue = ({ montant,timestamp, date }:any) => {
+  const [montantValue, setMontantValue] = useState(montant);
+  
+  const [dateValue, setDateValue] = useState(date);
+ 
+ 
+  const [timestampValue, settimestampValue] = useState(timestamp);
+ 
+ 
+  const [modificationEffectuee, setModificationEffectuee] = useState(false);
+
+  const [depenseSelectionnee, setDepenseSelectionnee] = useState(null);
   const ModifierRev  = () => {
    
   };
     return (
       <View style={styles.container}>
         <View style={{width:'30%',alignItems:'center',}}>
-        <Text style={styles.jour}>{jour}</Text>
-        <Text style={styles.date}>{date}</Text>
+        <Text style={styles.jour}>{timestampValue}</Text>
+        <Text style={styles.date}>{dateValue}</Text>
         </View>
         <View style={{width:'30%',alignItems:'flex-end',}}>
         <TouchableOpacity onPress={ModifierRev } style={styles.boutonModifier}>
