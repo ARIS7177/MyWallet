@@ -1,18 +1,26 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/firebaseConfig";
 
+import { PhoneProvider } from "@/lib/PhoneContext";
+import { useUser } from "@/stores/user";
 import "../global.css";
 import AuthNavigator from "./navigations/AuthNavigator";
 import TabNavigator from "./navigations/Tabnavigator";
-import { PhoneProvider } from "@/lib/PhoneContext";
+import NativeWind from "nativewind";
+import {
+  PhoneAuthCredential,
+  getAuth,
+  reauthenticateWithCredential,
+  signInWithCredential,
+  signInWithCustomToken,
+} from "firebase/auth";
+// import { auth } from "@/firebaseConfig";
 
 enableScreens();
 
@@ -29,12 +37,34 @@ export default function Index() {
     "Raleway-Bold": require("../assets/fonts/raleway/Raleway-Bold.ttf"),
   });
 
+  const { user, setUser } = useUser();
+  // console.log(user);
   useEffect(() => {
     async function prepare() {
       try {
-        await SplashScreen.preventAutoHideAsync();
+        // Initialisation de NativeWind
+        // Vérifier l'état de l'utilisateur avec Firebase Auth
+        // onAuthStateChanged(xauth, (currentUser) => {
+        //   if (currentUser) {
+        //     // Utilisateur connecté, vous pouvez stocker son ID ou autre info si nécessaire
+        //     setUser(currentUser.uid);
+        //     AsyncStorage.setItem("userPhone", currentUser.phoneNumber || "");
+        //   } else {
+        //     setUser(null);
+        //     AsyncStorage.removeItem("userPhone");
+        //   }
+        // });
+        const storedUser = await AsyncStorage.getItem("user");
+        console.log("storedUser", storedUser);
+        if (storedUser) {
+          const storeUserObject = JSON.parse(storedUser);
+          setUser(storeUserObject);
+          console.log("user", user);
+        } else {
+          setUser(null);
+        }
       } catch (e) {
-        console.warn(e);
+        console.warn({ e });
       } finally {
         if (fontsLoaded || fontError) {
           setAppIsReady(true);
@@ -50,8 +80,6 @@ export default function Index() {
     }
   }, [appIsReady]);
 
-  const [user] = useAuthState(auth);
-
   if (!appIsReady) {
     return null;
   }
@@ -60,7 +88,7 @@ export default function Index() {
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <NavigationContainer independent={true}>
         <PhoneProvider>
-          {user ? <TabNavigator /> : <AuthNavigator />}
+          {user !== null ? <TabNavigator /> : <AuthNavigator />}
         </PhoneProvider>
       </NavigationContainer>
     </SafeAreaProvider>

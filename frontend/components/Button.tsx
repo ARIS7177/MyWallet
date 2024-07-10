@@ -55,11 +55,11 @@ export default function Button({
   return (
     <TouchableOpacity onPress={onPress} disabled={disabled}>
       {isComposed ? (
-        <View className="container justify-center items-center">
+        <View className="flex-1 justify-center items-center">
           <View
             className={clsx(
-              `circle w-7 h-7 rounded-full bg-gray-300 border border-gray-400 ${
-                isActive && " bg-primary-600 border-primary-800"
+              `w-7 h-7 rounded-full bg-gray-300 border border-gray-400 ${
+                isActive && "bg-primary-600 border-primary-800"
               }`
             )}
           ></View>
@@ -70,13 +70,13 @@ export default function Button({
           className={clsx(
             themeValue,
             className,
-            " rounded-xl justify-center items-center"
+            "rounded-xl flex justify-center items-center"
           )}
         >
           <Text
             className={clsx(
               styleText,
-              "font-helvitica-bold text-2xl py-3 items-center",
+              "font-helvitica font-bold text-2xl py-3  text-center",
               styleText
             )}
           >
@@ -85,7 +85,12 @@ export default function Button({
                 color={iconColor}
                 name={title}
                 size={28}
-                className="flex-1 items-center justify-center "
+                // className="flex-1 items-center justify-center "
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               />
             ) : (
               title
@@ -96,4 +101,3 @@ export default function Button({
     </TouchableOpacity>
   );
 }
-

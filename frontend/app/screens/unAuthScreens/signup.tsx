@@ -1,11 +1,12 @@
 import Button from "@/components/Button";
 import InputComponent from "@/components/inputComponent";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecaptchaVerifier, getAuth } from "firebase/auth";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import SelectDropdown from "react-native-select-dropdown";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
   View,
 } from "react-native";
 import * as z from "zod";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 // Définir le schéma de validation avec Zod
 const signUpSchema = z
@@ -25,10 +27,20 @@ const signUpSchema = z
     statut: z.string().min(1, "votre statut professionnel requis"),
     motdepasse: z
       .string()
-      .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+      .min(8, "Le mot de passe doit contenir au moins 8 caractères.")
+      .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule.")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Le mot de passe doit contenir au moins un symbole spécial."
+      ),
     confirmPassword: z
       .string()
-      .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+      .min(8, "Le mot de passe doit contenir au moins 8 caractères.")
+      .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule.")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Le mot de passe doit contenir au moins un symbole spécial."
+      ),
   })
   .refine((data) => data.motdepasse === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
@@ -39,7 +51,15 @@ type DataForm = z.infer<typeof signUpSchema>;
 
 export default function Signup({ navigation }: any) {
   const [loading, setLoading] = useState(false);
-  const phoneInputRef = useRef(null);
+  const [error, setError] = useState("");
+  //tableau de donnees pour le select option
+  const data = [
+    { title: "Employeur" },
+    { title: "Employer" },
+    { title: "Etudiant" },
+    { title: "independant" },
+    { title: "sans emploi" },
+  ];
   const {
     control,
     handleSubmit,
@@ -47,17 +67,44 @@ export default function Signup({ navigation }: any) {
   } = useForm<DataForm>({
     resolver: zodResolver(signUpSchema),
   });
-  const onSubmit = (data: DataForm) => {
-    setLoading(true);
-    console.log(data, typeof data.motdepasse);
-    navigation.navigate("Verification", {
-      name: data.nom,
-      firstname: data.prenom,
-      phone: data.phone,
-      birthday: data.datenaissance,
-      statut: data.statut,
-      password: data.motdepasse,
+  // Arrêter le loader si l'utilisateur revient à la page précédente
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      setLoading(false);
+      setError("");
     });
+
+    return unsubscribe;
+  }, [navigation]);
+  const onSubmit = async (data: DataForm) => {
+    setLoading(true);
+    setError("");
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("La connexion est mauvaise, veuillez réessayer.");
+      Alert.alert("Erreur", "La connexion est mauvaise, veuillez réessayer.");
+    }, 10000); // 10 seconds timeout
+    try {
+      // Simulate async operation like API call
+      // Replace this setTimeout with actual API call
+      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
+
+      clearTimeout(timeoutId); // Clear the timeout if operation is successful
+
+      navigation.navigate("Verification", {
+        name: data.nom,
+        firstname: data.prenom,
+        phone: data.phone,
+        birthday: data.datenaissance,
+        statut: data.statut,
+        password: data.motdepasse,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId); // Clear the timeout if operation fails
+      setLoading(false);
+      setError("Une erreur s'est produite, veuillez réessayer.");
+      Alert.alert("Erreur", "Une erreur s'est produite, veuillez réessayer.");
+    }
   };
 
   return (
@@ -147,17 +194,56 @@ export default function Signup({ navigation }: any) {
               control={control}
               name="statut"
               render={({ field: { onChange, onBlur, value } }) => (
-                <InputComponent
-                  type="default"
-                  placeholder="Statut professionnel"
-                  onChangeText={onChange}
-                  secureTextEntry={false}
-                  isIcon={false}
-                  value={value}
-                  errorMessage={errors.statut?.message}
+                <SelectDropdown
+                  data={data}
+                  onSelect={(selectedItem) => {
+                    onChange(selectedItem.title as string);
+                    console.log(
+                      "selectedItem :",
+                      selectedItem.title,
+                      typeof selectedItem.title
+                    );
+                  }}
+                  renderButton={(selectedItem, isOpened) => {
+                    return (
+                      <View
+                        className=" w-full h-16 border-[0.5px] border-[#292929] bg-purple-50 rounded-xl flex-row justify-between items-center gap-10 px-5"
+                        style={{ height: 64, paddingHorizontal: 20 }}
+                      >
+                        <Text className="text-xl font-helvitica text-[#151E26]">
+                          {(selectedItem && selectedItem.title) ||
+                            "selectionner votre statut"}
+                        </Text>
+                        <Icon
+                          name={isOpened ? "chevron-up" : "chevron-down"}
+                          style={{ fontSize: 24 }}
+                        />
+                      </View>
+                    );
+                  }}
+                  renderItem={(item) => {
+                    return (
+                      <View className=" w-full  bg-emerald-700 flex-row px-3 justify-center items-center py-2">
+                        <Text className=" text-xl font-raleway">
+                          {item.title}
+                        </Text>
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  dropdownStyle={{
+                    backgroundColor: "#E9ECEF",
+                    borderRadius: 8,
+                    height: 150,
+                  }}
                 />
               )}
             />
+            {errors.statut && (
+              <Text style={{ color: "red", marginTop: 5 }}>
+                {errors.statut.message}
+              </Text>
+            )}
 
             <View className="pass flex-row gap-5 justify-between">
               <View className="flex-1">

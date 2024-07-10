@@ -94,7 +94,11 @@ export default function OtpVerification() {
           statut,
           password: hashedPassword,
         });
-        navigation.navigate("Main", { screen: "creer" });
+        // navigation.navigate("Main", { screen: "creer" });
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Main", params: { screen: "creer" } }],
+        });
       }
     } catch (error: any) {
       setLoading(false);

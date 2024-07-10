@@ -1,11 +1,15 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Icon from "react-native-vector-icons/Ionicons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import HomePage from "../screens/authScreens/homePage";
 import Transaction from "../screens/authScreens/transaction";
 import CreatePage from "../screens/authScreens/createPage";
 import Stats from "../screens/authScreens/stats";
 import Setting from "../screens/authScreens/setting";
+import CustomHeader from "@/components/customHeader";
+import SettingNavigator from "./settingNavigation";
 
 const Tab = createBottomTabNavigator();
 export type RootTabParamList = {
@@ -17,59 +21,70 @@ export type RootTabParamList = {
   parametre: undefined;
 };
 
+// Mapping for icons
+const iconsMap = {
+  home: { library: Ionicons, name: "home-outline" },
+  transaction: { library: Ionicons, name: "swap-horizontal-outline" },
+  creer: { library: Ionicons, name: "add-circle-outline" },
+  categorie: { library: FontAwesome, name: "layers" },
+  stat: { library: MaterialIcons, name: "bar-chart" },
+  parametre: { library: Ionicons, name: "settings-outline" },
+};
+
+const renderIcon = (library, name, size, color) => {
+  const IconComponent = library;
+  return <IconComponent name={name} size={size} color={color} />;
+};
+
 function TabNavigator() {
   return (
     <Tab.Navigator
+      initialRouteName="home"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          switch (route.name) {
-            case "home":
-              iconName = focused ? "home" : "home-outline";
-              break;
-            case "transaction":
-              iconName = focused
-                ? "swap-horizontal"
-                : "swap-horizontal-outline";
-              break;
-            case "create":
-              iconName = focused ? "add-circle" : "add-circle-outline";
-              break;
-            case "category":
-              iconName = focused ? "layers" : "layers-outline";
-              break;
-            case "stat":
-              iconName = focused ? "bar-chart" : "bar-chart-outline";
-              break;
-            case "setting":
-              iconName = focused ? "settings" : "settings-outline";
-              break;
-            default:
-              iconName = "alert-circle";
-              break;
-          }
-          return (
-            <Icon name={iconName} size={focused ? 36 : size} color={color} />
-          );
+          const icon = iconsMap[route.name];
+          const iconName = focused ? icon.name : icon.name;
+          return renderIcon(icon.library, iconName, focused ? 36 : size, color);
         },
         tabBarActiveTintColor: "#E29800",
         tabBarInactiveTintColor: "gray",
+        headerTitleStyle: { flex: 1 },
       })}
     >
-      <Tab.Screen name="home" component={HomePage} />
       <Tab.Screen name="transaction" component={Transaction} />
       <Tab.Screen
         name="creer"
         component={CreatePage}
         options={{
-          title: "Creer un nouveau status",
           headerTitleAlign: "center",
+          headerShown: false,
         }}
       />
-      <Tab.Screen name="categorie" component={Stats} />
+      <Tab.Screen
+        name="home"
+        component={HomePage}
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader />,
+        }}
+      />
       <Tab.Screen name="stat" component={Stats} />
-      <Tab.Screen name="parametre" component={Setting} />
+      <Tab.Screen
+        name="parametre"
+        component={SettingNavigator}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#ffc400",
+          },
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontWeight: "bold",
+            textTransform: "capitalize",
+            // color: "#fff",
+          },
+        }}
+      />
     </Tab.Navigator>
   );
 }

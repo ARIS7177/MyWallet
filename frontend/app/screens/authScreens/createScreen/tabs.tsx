@@ -7,40 +7,44 @@ const Tabs = () => {
   const [activeTab, setActiveTab] = useState("tab1");
   return (
     <ScrollView>
-      <View className=" gap-20 mt-10 justify-centernter">
+      <View className=" gap-10 mt-10 justify-centernter">
         <View className="header gap-4">
           <Text className=" text-russian-950 text-center font-helvitica-bold text-3xl">
-            S'agit-il d'un/d'une:
+            Que voulez-vous creer?
           </Text>
-          <View className="buttons gap-4 flex-row justify-center">
-            <Button
-              title="Depense"
-              theme="secondary"
-              isComposed
-              isActive={activeTab === "tab1"}
-              onPress={() => setActiveTab("tab1")}
-            />
+          <View
+            className="buttons gap-4 flex-row justify-center "
+            style={{ height: 60 }}
+          >
             <Button
               title="Revenue"
               theme="secondary"
-              isComposed
-              isActive={activeTab === "tab2"}
-              onPress={() => setActiveTab("tab2")}
+              isComposed={true}
+              isActive={activeTab === "tab1"}
+              onPress={() => setActiveTab("tab1")}
             />
+
             <Button
               title="Budget"
               theme="secondary"
-              isComposed
+              isComposed={true}
               isActive={activeTab === "tab3"}
               onPress={() => setActiveTab("tab3")}
             />
             <Button
-              title="Categorie"
+              title="Depense"
+              theme="secondary"
+              isComposed={true}
+              isActive={activeTab === "tab2"}
+              onPress={() => setActiveTab("tab2")}
+            />
+            {/* <Button
+              title="categorie"
               theme="secondary"
               isComposed
               isActive={activeTab === "tab4"}
               onPress={() => setActiveTab("tab4")}
-            />
+            /> */}
           </View>
         </View>
         <View className=" w-full">

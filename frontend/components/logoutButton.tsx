@@ -6,16 +6,24 @@ import Button from "./Button";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/app/navigations/AuthNavigator";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUser } from "@/stores/user";
 
 type AuthNavigationProps = StackNavigationProp<RootStackParamList>;
 const LogoutButton = () => {
+  const setUser = useUser((state) => state.setUser);
   const navigation = useNavigation<AuthNavigationProps>();
   const handleLogout = async () => {
     try {
       // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
-      navigation.navigate("login");
+      setUser(null);
+      await AsyncStorage.removeItem("user");
       await signOut(auth);
-      Alert.alert("Succès", "Déconnexion réussie !");
+      // navigation.navigate("login");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "login" }],
+      });
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }

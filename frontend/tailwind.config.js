@@ -44,6 +44,11 @@ module.exports = {
         },
         purple: {
           50: "#f6f5fd",
+          100: "#EFECFB",
+        },
+        wild_sald: {
+          500: "#7C7C7C",
+          950: "#292929",
         },
       },
     },

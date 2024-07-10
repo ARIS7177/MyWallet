@@ -1,19 +1,42 @@
-import React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Platform,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import Button from "../../../../components/Button";
 import * as zod from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputComponent from "../../../../components/inputComponent";
-
-const budgetSchema = zod.object({
-  pourcentage: zod
-    .string()
-    .min(1, "entrer le pourcentage dont vous ne voudriez pas depasser")
-    .max(100, "Le nombre doit être inférieur ou égal à 100"),
-  montant: zod.coerce.number(),
-});
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_BD, auth } from "@/firebaseConfig";
+import { addDoc, collection } from "firebase/firestore";
+import { fetchUserBudgets, fetchUserIncomes } from "@/components/getItems";
+const budgetSchema = zod
+  .object({
+    montant: zod.coerce.number().min(100, "montant minimum 100f"),
+    objectif: zod.string().optional(),
+    startDate: zod
+      .date()
+      .refine((date) => date === new Date() || date >= new Date(), {
+        message: "La date doit être supérieure ou égale à aujourd'hui",
+      }),
+    endDate: zod.date(),
+  })
+  .refine((data) => data.endDate > data.startDate, {
+    message: "La date de fin doit être supérieure à celle de début",
+    path: ["endDate"],
+  });
 type budgetData = zod.infer<typeof budgetSchema>;
+
 const Budget = () => {
   const {
     handleSubmit,
@@ -22,48 +45,114 @@ const Budget = () => {
   } = useForm<budgetData>({
     resolver: zodResolver(budgetSchema),
   });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userRevenues, setUserRevenues] = useState<any[]>([]);
+  const [userBudgets, setUserBudgets] = useState<any[]>([]);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
 
-  const onSubmit = (data: budgetData) => {
+  //recuper les revenues dans la bd
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        try {
+          const userIncomes = await fetchUserIncomes(user);
+          const userBudgets = await fetchUserBudgets(user);
+          setUserRevenues(userIncomes);
+          setUserBudgets(userBudgets);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des userData :", error);
+        }
+      } else {
+        console.log("don't have user");
+      }
+    };
+    fetchData();
+  }, [user]);
+  //somme des revenues
+  const sumIncomes = userRevenues.reduce((acc, obj) => {
+    return acc + obj.montant;
+  }, 0);
+
+  const sumBudgets = userBudgets.reduce((acc, obj) => {
+    acc + obj.montant;
+  }, 0);
+
+  const diff = sumIncomes - sumBudgets;
+
+  const [isStartDatePickerVisible, setIsStartDatePickerVisible] =
+    useState(false);
+  const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
+
+  const showStartDatePicker = () => setIsStartDatePickerVisible(true);
+  const hideStartDatePicker = () => setIsStartDatePickerVisible(false);
+
+  const showEndDatePicker = () => setIsEndDatePickerVisible(true);
+  const hideEndDatePicker = () => setIsEndDatePickerVisible(false);
+
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long", // 'short' pour abrégé, 'narrow' pour très court
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("fr-FR", options);
+  };
+
+  const handleDateChange =
+    (onChange) => (event: DateTimePickerEvent, date?: Date) => {
+      if (date) {
+        onChange(date);
+      }
+      if (Platform.OS === "android") {
+        hideStartDatePicker();
+        hideEndDatePicker();
+      }
+    };
+
+  const onSubmit = async (data: budgetData) => {
     console.log("data", data);
+    setIsLoading(true);
+    if (user) {
+      try {
+        if (sumIncomes - sumBudgets > data.montant) {
+          const docRef = await addDoc(collection(FIREBASE_BD, "budgets"), {
+            montant: data.montant,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            objectif: data.objectif,
+            uid: user.uid,
+          });
+          console.log("Document written with ID: ", docRef.id);
+          Alert.alert("succes", "creation de la depense valide");
+        } else {
+          Alert.alert(
+            "Erreur",
+            "Le budget ne doit pas etre superieur au revenue" + { diff }
+          );
+        }
+      } catch (error: any) {
+        console.error("Error adding document: ", error);
+        Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      console.log("User not authenticated");
+    }
   };
   return (
     <View className="containers w-full px-4 gap-10  flex-1">
       <View className="inputs w-full gap-10">
-        <View className="percent_group gap-4">
-          <Text className="text-center font-helvitica-bold text-2xl w-full">
-            Creer un nouveau budget sous forme de pourcentage
-          </Text>
-          <View className="desc gap-2 w-full">
-            <Text className=" text-russian-950 text-lg font-raleway-medium">
-              Pourcentage
-            </Text>
-            <Controller
-              control={control}
-              name="pourcentage"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <InputComponent
-                  type="default"
-                  placeholder="Entrer un pourcentage"
-                  onChangeText={onChange}
-                  isIcon={true}
-                  iconType="FontAwesome"
-                  personalIcon="percent"
-                  className="flex-row items-center  gap-10"
-                  iconStyle="w-8 h-12 text-center pt-3 "
-                  textStyle="w-5/6"
-                />
-              )}
-            />
-          </View>
-        </View>
-        <View className="container_delimiter flex-row items-center justify-center gap-3">
-          <View className="first_delemiter flex- border-b border-b-gray-300  w-48"></View>
-          <Text className="text-gray-400 text-xl">Ou</Text>
-          <View className="second_delimiter flex- border-b border-b-gray-300  w-48"></View>
-        </View>
         <View className="amount_group gap-4 ">
           <Text className="text-center font-helvitica-bold text-2xl w-full">
-            Inscrire un montant precis
+            Inscrire un budget
           </Text>
           <View className="desc gap-2  w-full">
             <Text className=" text-russian-950 text-lg font-raleway-medium">
@@ -78,11 +167,114 @@ const Budget = () => {
                   placeholder="Entrer un montant"
                   onChangeText={onChange}
                   isIcon={false}
+                  keyboard={"phone-pad"}
                 />
               )}
             />
+            {errors.montant && (
+              <Text className=" text-rose-600 mt-1">
+                {errors.montant.message}
+              </Text>
+            )}
+          </View>
+          <View className="desc gap-2  w-full">
+            <Text className=" text-russian-950 text-lg font-raleway-medium">
+              Objectif{" "}
+              <Text className="text-sm text-wild_sald-500">(Optionel)</Text>
+            </Text>
+            <Controller
+              control={control}
+              name="objectif" // Assurez-vous d'avoir le bon nom pour ce champ
+              render={({ field: { onChange, onBlur, value } }) => (
+                <InputComponent
+                  type="default"
+                  placeholder="Entrer votre objectif"
+                  onChangeText={onChange}
+                  isIcon={false}
+                />
+              )}
+            />
+            {errors.objectif && (
+              <Text className=" text-rose-600 mt-1">
+                {errors.objectif.message}
+              </Text>
+            )}
           </View>
         </View>
+        <View className="container date flex-row gap-5">
+          <View className=" w-[48%]">
+            <Text className=" text-xl font-raleway">Date de début</Text>
+            <Controller
+              control={control}
+              name="startDate"
+              render={({ field: { onChange, value } }) => (
+                <View className="border-[0.5px] border-[#292929] w-full rounded-xl bg-purple-50 relative p-5">
+                  <TouchableOpacity onPress={showStartDatePicker}>
+                    <Text className=" flex-nowrap">
+                      {value ? formatDate(value) : "Entrer une date de début"}
+                    </Text>
+                  </TouchableOpacity>
+                  {isStartDatePickerVisible && (
+                    <DateTimePicker
+                      value={value || new Date()}
+                      mode="date"
+                      display="default"
+                      minimumDate={new Date()}
+                      onChange={handleDateChange(onChange)}
+                    />
+                  )}
+                </View>
+              )}
+            />
+            {errors.startDate && (
+              <Text className=" text-rose-600 mt-1">
+                {errors.startDate.message}
+              </Text>
+            )}
+          </View>
+
+          <View className="w-[48%]">
+            <Text className=" text-xl font-raleway">Date de fin</Text>
+            <Controller
+              control={control}
+              name="endDate"
+              render={({ field: { onChange, value } }) => (
+                <View className="border-[0.5px] border-[#292929] w-full rounded-xl bg-purple-50 relative p-5">
+                  <TouchableOpacity onPress={showEndDatePicker}>
+                    <Text>
+                      {value ? formatDate(value) : "Entrer une date de fin"}
+                    </Text>
+                  </TouchableOpacity>
+                  {isEndDatePickerVisible && (
+                    <DateTimePicker
+                      value={value || new Date()}
+                      mode="date"
+                      display="default"
+                      minimumDate={new Date()}
+                      onChange={handleDateChange(onChange)}
+                    />
+                  )}
+                </View>
+              )}
+            />
+            {errors.endDate && (
+              <Text className=" text-rose-600">{errors.endDate.message}</Text>
+            )}
+          </View>
+        </View>
+        <Button
+          title={
+            isLoading ? (
+              <ActivityIndicator size={"large"} color={"#fff"} />
+            ) : (
+              "Valider"
+            )
+          }
+          onPress={handleSubmit(onSubmit)}
+          theme={"primary"}
+          className="mt-8"
+          styleText=" text-white"
+        />
       </View>
     </View>
   );

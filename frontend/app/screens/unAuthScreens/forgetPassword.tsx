@@ -14,6 +14,8 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as zod from "zod";
 import { doc, getDoc } from "firebase/firestore";
@@ -69,65 +71,76 @@ export default function ForgetPassword() {
   };
 
   return (
-    <ScrollView className="w-full">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} className="flex-1">
-        <View className="container flex-1 h-full">
-          <FirebaseRecaptchaVerifierModal
-            ref={recaptchaVerifier}
-            firebaseConfig={auth.app.options}
-          />
-          <View className="images  p-0 relative w-full ">
-            <Image
-              className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
-              source={require("../../../assets/images/Ellipse.png")}
-              resizeMode="cover"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+    >
+      <ScrollView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="container">
+            <FirebaseRecaptchaVerifierModal
+              ref={recaptchaVerifier}
+              firebaseConfig={auth.app.options}
             />
-            <Image
-              className=" w-full"
-              source={require("../../../assets/images/Forgot password-bro.png")}
-            />
-          </View>
-          <View className="body gap-10 p-4 ">
-            <View className="text gap-10">
-              <Text className="text-center px-10 font-raleway-medium">
-                Merci d'entrez votre numero d’inscription ci-dessous pour
-                recevoir un code de verification afin de renitialiser votre mot
-                de passe
-              </Text>
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <InputComponent
-                    type="phone"
-                    placeholder="numero de telephone"
-                    onChangeText={onChange}
-                    value={value}
-                    errorMessage={errors.phone?.message}
-                    isIcon={false}
-                    secureTextEntry={false}
-                  />
-                )}
+            <View className="images  p-0 relative w-full ">
+              <Image
+                className=" absolute top-0 right-0 max-w-[379] max-h-[379]"
+                source={require("../../../assets/images/Ellipse.png")}
+                resizeMode="cover"
+              />
+              <Image
+                className=" w-full"
+                source={require("../../../assets/images/Forgot password-bro.png")}
               />
             </View>
-            <View className="button">
-              <Button
-                title={
-                  isLoading ? (
-                    <ActivityIndicator size={"large"} color={"#bb6c02"} />
-                  ) : (
-                    "Envoyer"
-                  )
-                }
-                theme="primary"
-                isSocialButton={false}
-                onPress={handleSubmit(onSubmit)}
-                styleText="text-white"
-              />
+            <View className="body gap-10 p-4 ">
+              <View className="text gap-10">
+                <Text className="text-center px-10 font-raleway-medium">
+                  Merci d'entrez votre numero d’inscription ci-dessous pour
+                  recevoir un code de verification afin de renitialiser votre
+                  mot de passe
+                </Text>
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <InputComponent
+                      type="phone"
+                      placeholder="numero de telephone"
+                      onChangeText={onChange}
+                      value={value}
+                      errorMessage={errors.phone?.message}
+                      isIcon={false}
+                      secureTextEntry={false}
+                    />
+                  )}
+                />
+              </View>
+              <View className="button pt-10 w-full">
+                <Button
+                  title={
+                    isLoading ? (
+                      <ActivityIndicator
+                        size={"large"}
+                        color={"#bb6c02"}
+                        className="text-center"
+                      />
+                    ) : (
+                      "Envoyer"
+                    )
+                  }
+                  theme="primary"
+                  isSocialButton={false}
+                  onPress={handleSubmit(onSubmit)}
+                  styleText="text-white"
+                  className="w-full "
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </ScrollView>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
