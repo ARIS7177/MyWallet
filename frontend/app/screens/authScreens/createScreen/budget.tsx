@@ -19,6 +19,7 @@ import DateTimePicker, {
 import { User, onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_BD, auth } from "@/firebaseConfig";
 import { addDoc, collection } from "firebase/firestore";
+import { fetchUserBudgets, fetchUserIncomes } from "@/components/getItems";
 const budgetSchema = zod
   .object({
     montant: zod.coerce.number().min(100, "montant minimum 100f"),
@@ -35,6 +36,7 @@ const budgetSchema = zod
     path: ["endDate"],
   });
 type budgetData = zod.infer<typeof budgetSchema>;
+
 const Budget = () => {
   const {
     handleSubmit,
@@ -45,12 +47,44 @@ const Budget = () => {
   });
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [userRevenues, setUserRevenues] = useState<any[]>([]);
+  const [userBudgets, setUserBudgets] = useState<any[]>([]);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
     return unsubscribe;
   }, []);
+
+  //recuper les revenues dans la bd
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        try {
+          const userIncomes = await fetchUserIncomes(user);
+          const userBudgets = await fetchUserBudgets(user);
+          setUserRevenues(userIncomes);
+          setUserBudgets(userBudgets);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des userData :", error);
+        }
+      } else {
+        console.log("don't have user");
+      }
+    };
+    fetchData();
+  }, [user]);
+  //somme des revenues
+  const sumIncomes = userRevenues.reduce((acc, obj) => {
+    return acc + obj.montant;
+  }, 0);
+
+  const sumBudgets = userBudgets.reduce((acc, obj) => {
+    acc + obj.montant;
+  }, 0);
+
+  const diff = sumIncomes - sumBudgets;
+
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] =
     useState(false);
   const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
@@ -87,15 +121,22 @@ const Budget = () => {
     setIsLoading(true);
     if (user) {
       try {
-        const docRef = await addDoc(collection(FIREBASE_BD, "budgets"), {
-          montant: data.montant,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          objectif: data.objectif,
-          uid: user.uid,
-        });
-        console.log("Document written with ID: ", docRef.id);
-        Alert.alert("succes", "creation de la depense valide");
+        if (sumIncomes - sumBudgets > data.montant) {
+          const docRef = await addDoc(collection(FIREBASE_BD, "budgets"), {
+            montant: data.montant,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            objectif: data.objectif,
+            uid: user.uid,
+          });
+          console.log("Document written with ID: ", docRef.id);
+          Alert.alert("succes", "creation de la depense valide");
+        } else {
+          Alert.alert(
+            "Erreur",
+            "Le budget ne doit pas etre superieur au revenue" + { diff }
+          );
+        }
       } catch (error: any) {
         console.error("Error adding document: ", error);
         Alert.alert("Erreur", `une erreur est survenue: ${error.message}`);

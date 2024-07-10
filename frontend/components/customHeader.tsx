@@ -5,7 +5,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 export class CustomHeader extends Component {
   render() {
     return (
-      <View className="containers flex-row justify-between items-center bg-yellow-50  w-full  py-2 z-0 px-2">
+      <View className="containers flex-row justify-between items-center bg-yellow-400  w-full  py-2 z-0 px-2">
         <View className="images">
           <Image
             className=" "

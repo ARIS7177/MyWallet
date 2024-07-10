@@ -67,6 +67,16 @@ export default function HomePage() {
     const monthName = date.toLocaleDateString("fr-FR", options);
     return monthName;
   };
+
+  //somme des revenues
+  const sumIncomes = userRevenues.reduce((acc, obj) => {
+    return acc + obj.montant;
+  }, 0);
+
+  const sumBudgets = userBudgets.reduce((acc, obj) => {
+    return acc + obj.montant;
+  }, 0);
+
   // console.log(user);
   useEffect(() => {
     const fetchData = async () => {
@@ -326,7 +336,7 @@ export default function HomePage() {
             </Text>
             <Text className=" font-raleway-medium text-xl">Bon retour !!!</Text>
           </View>
-          <View className="container_budgets flex-row gap-2">
+          <View className="container_budgets justify-center flex-row gap-2">
             <View
               className="budget justify-center border-[0.5px] border-gray-400 items-center rounded-3xl  bg-purple-100 flex-row gap-2"
               style={{
@@ -335,12 +345,12 @@ export default function HomePage() {
                 borderRadius: 24,
               }}
             >
-              <View className=" py-10 px-2">
-                <Text className=" font-raleway-bold text-xl text-center">
+              <View className=" py-8 px-2">
+                <Text className=" font-raleway-bold text-lg text-center">
                   Votre revenue actuel :{" "}
                 </Text>
-                <Text className=" font-raleway-bold text-[25px] text-primary-600">
-                  50000 Fcfa{" "}
+                <Text className=" font-raleway-bold text-[25px] text-center text-primary-600">
+                  {sumIncomes} Fcfa
                 </Text>
               </View>
             </View>
@@ -352,12 +362,12 @@ export default function HomePage() {
                 borderRadius: 24,
               }}
             >
-              <View className=" py-10 px-2">
-                <Text className=" font-raleway-bold text-xl text-center">
+              <View className=" py-8 px-2">
+                <Text className=" font-raleway-bold text-lg text-center">
                   Votre budget actuel :{" "}
                 </Text>
-                <Text className=" font-raleway-bold text-[25px] text-primary-600">
-                  50000 Fcfa{" "}
+                <Text className=" font-raleway-bold text-[25px] text-center text-primary-600">
+                  {sumBudgets} Fcfa
                 </Text>
               </View>
             </View>
@@ -369,11 +379,10 @@ export default function HomePage() {
               </Text>
               <View className="circle rounded-full w-8 h-8 border border-gray-400 justify-end items-center bg-gray-300">
                 <Text className=" text-pink-600  text-lg text-center font-bold">
-                  {userExpenses.length !== 0 ? (
-                    expenseNumbers
-                  ) : (
-                    <ActivityIndicator color={"orange"} size={"small"} />
-                  )}
+                  {userExpenses.length !== 0
+                    ? expenseNumbers
+                    : // <ActivityIndicator color={"orange"} size={"small"} />
+                      0}
                 </Text>
               </View>
             </View>
@@ -395,7 +404,7 @@ export default function HomePage() {
           </View>
 
           <View className="economy gap-4">
-            <View className="header flex-row gap-5 items-center  ">
+            <View className="header flex-row gap-5 items-center">
               <Text className=" font-helvitica font-bold text-2xl text-center ">
                 Mes Economies
               </Text>

@@ -9,6 +9,7 @@ import CreatePage from "../screens/authScreens/createPage";
 import Stats from "../screens/authScreens/stats";
 import Setting from "../screens/authScreens/setting";
 import CustomHeader from "@/components/customHeader";
+import SettingNavigator from "./settingNavigation";
 
 const Tab = createBottomTabNavigator();
 export type RootTabParamList = {
@@ -68,7 +69,22 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen name="stat" component={Stats} />
-      <Tab.Screen name="parametre" component={Setting} />
+      <Tab.Screen
+        name="parametre"
+        component={SettingNavigator}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#ffc400",
+          },
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontWeight: "bold",
+            textTransform: "capitalize",
+            // color: "#fff",
+          },
+        }}
+      />
     </Tab.Navigator>
   );
 }
