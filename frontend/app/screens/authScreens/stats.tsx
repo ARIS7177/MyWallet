@@ -21,8 +21,10 @@ import { collection, getDocs,doc, deleteDoc } from "firebase/firestore";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { format } from 'date-fns';
-// import { VictoryPie } from 'victory-native';
-
+//  import { VictoryPie } from 'victory-native';
+import { PieChart } from 'react-native-svg-charts';
+import { Text as SvgText } from 'react-native-svg';
+  
 // Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAolxF8zqSV4j00f_mui5cHPkB8uoeMbJY",
@@ -81,20 +83,22 @@ const AnalyseFinanciere = () => {
         result[expense.categorie] = expense.montant;
       }
       return result;
-    }, {});
-    setDepensesParCategorie(depensesParCategorie);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des données de Firebase Firestore:', error);
-  }
-};
+      }, {});
+      setDepensesParCategorie(depensesParCategorie);
+      } 
+        catch (error) {
+          console.error('Erreur lors de la récupération des données de Firebase Firestore:', error);
+      }
+      
+    };
 
 fetchData();
 }, []);
 
-const data = Object.entries(depensesParCategorie).map(([categorie, montant]) => ({
-  x: categorie,
-  y: montant,
-}));
+// const data = Object.entries(depensesParCategorie).map(([categorie, montant]) => ({
+//   x: categorie,
+//   y: montant,
+// }));
 
 // const getRandomColor = () => {
 //   const colors = ['#FF6E54', '#FFD54F', '#4FC3F7', '#AED581', '#F06292', '#9575CD', '#4DD0E1', '#FF8A65'];
@@ -117,8 +121,11 @@ const data = Object.entries(depensesParCategorie).map(([categorie, montant]) => 
         <Text key={categorie} style={styles.text}>
           {categorie}: {montant.toString()}
         </Text>
+        
       ))}
+
       </View>
+      
 {/* <VictoryPie
         data={data}
         colorScale={['#FF6E54', '#FFD54F', '#4FC3F7', '#AED581', '#F06292', '#9575CD', '#4DD0E1', '#FF8A65']}
@@ -156,7 +163,6 @@ const styles = {
     width:"100%",
     alignItems: 'center',
     flexDirection: 'column',
-    
     borderWidth: 1,
     borderColor: '#888',
     borderRadius: 8,

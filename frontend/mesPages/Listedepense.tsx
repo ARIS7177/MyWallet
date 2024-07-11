@@ -15,10 +15,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import { initializeApp } from "firebase/app";
 import { getFirestore, DocumentData } from "firebase/firestore";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,doc, deleteDoc,query, where  } from "firebase/firestore";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { format } from 'date-fns';
+import { getAuth } from "firebase/auth";
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -34,8 +35,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const FIREBASE_BD = getFirestore(app);
+const auth = getAuth(app);
 
-// Read collection from Firestore and print it
+// Lire la collection depuis firestore et l'afficher
 
 const collect = collection(FIREBASE_BD, "expenses");
 getDocs(collect).then((expenses) => {
@@ -52,17 +54,42 @@ const Listedepense = () => {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const expensesSnapshot = await getDocs(
-          collection(FIREBASE_BD, "expenses")
-        );
-        const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
-          doc.data()
-        );
-        setExpenses(expensesData);
+        const user = auth.currentUser;
+        if (user) {
+          const userID = user.uid;
+          const expensesSnapshot = await getDocs(
+            query(collection(FIREBASE_BD, "expenses"), where("userID", "==", userID))
+          );
+          const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
+            doc.data()
+          );
+          setExpenses(expensesData);
+    
+          // Vérifier si le tableau des dépenses est vide
+          if (expensesData.length === 0) {
+            // Afficher un message indiquant que l'utilisateur n'a pas encore effectué de dépense
+            console.log("Aucune dépense pour l'utilisateur actuel");
+          }
+        } else {
+          console.log("Aucun utilisateur connecté");
+        }
       } catch (error) {
         console.error("Erreur lors de la récupération des dépenses:", error);
       }
     };
+    // const fetchExpenses = async () => {
+    //   try {
+    //     const expensesSnapshot = await getDocs(
+    //       collection(FIREBASE_BD, "expenses")
+    //     );
+    //     const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
+    //       doc.data()
+    //     );
+    //     setExpenses(expensesData);
+    //   } catch (error) {
+    //     console.error("Erreur lors de la récupération des dépenses:", error);
+    //   }
+    // };
 
     fetchExpenses();
   }, []);
