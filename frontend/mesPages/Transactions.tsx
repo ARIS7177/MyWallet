@@ -72,7 +72,7 @@ const styles = {
     
 //   },
   button: {
-    backgroundColor: 'gray',
+    backgroundColor:'red',
     borderColor: '#FFC400',
     justifyContent:'center',
     paddingHorizontal: 20,

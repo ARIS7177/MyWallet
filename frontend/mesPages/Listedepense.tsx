@@ -52,44 +52,44 @@ const Listedepense = () => {
   const [expenses, setExpenses] = useState<DocumentData[]>([]); // Annotation de type explicite
 
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const userID = user.uid;
-          const expensesSnapshot = await getDocs(
-            query(collection(FIREBASE_BD, "expenses"), where("userID", "==", userID))
-          );
-          const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
-            doc.data()
-          );
-          setExpenses(expensesData);
-    
-          // Vérifier si le tableau des dépenses est vide
-          if (expensesData.length === 0) {
-            // Afficher un message indiquant que l'utilisateur n'a pas encore effectué de dépense
-            console.log("Aucune dépense pour l'utilisateur actuel");
-          }
-        } else {
-          console.log("Aucun utilisateur connecté");
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération des dépenses:", error);
-      }
-    };
     // const fetchExpenses = async () => {
     //   try {
-    //     const expensesSnapshot = await getDocs(
-    //       collection(FIREBASE_BD, "expenses")
-    //     );
-    //     const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
-    //       doc.data()
-    //     );
-    //     setExpenses(expensesData);
+    //     const user = auth.currentUser;
+    //     if (user) {
+    //       const userID = user.uid;
+    //       const expensesSnapshot = await getDocs(
+    //         query(collection(FIREBASE_BD, "expenses"), where("userID", "==", userID))
+    //       );
+    //       const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
+    //         doc.data()
+    //       );
+    //       setExpenses(expensesData);
+    
+    //       // Vérifier si le tableau des dépenses est vide
+    //       if (expensesData.length === 0) {
+    //         // Afficher un message indiquant que l'utilisateur n'a pas encore effectué de dépense
+    //         console.log("Aucune dépense pour l'utilisateur actuel");
+    //       }
+    //     } else {
+    //       console.log("Aucun utilisateur connecté");
+    //     }
     //   } catch (error) {
     //     console.error("Erreur lors de la récupération des dépenses:", error);
     //   }
     // };
+    const fetchExpenses = async () => {
+      try {
+        const expensesSnapshot = await getDocs(
+          collection(FIREBASE_BD, "expenses")
+        );
+        const expensesData: DocumentData[] = expensesSnapshot.docs.map((doc) =>
+          doc.data()
+        );
+        setExpenses(expensesData);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des dépenses:", error);
+      }
+    };
 
     fetchExpenses();
   }, []);
@@ -145,7 +145,7 @@ const styles = {
   container: {
     height: "100%",
     width: "100%",
-    backgroundColor: "",
+    backgroundColor: "white",
     paddingHorizontal: 10,
     display: "flex",
 

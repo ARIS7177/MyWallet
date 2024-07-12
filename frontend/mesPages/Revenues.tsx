@@ -92,7 +92,9 @@ const Revenues = () => {
         <Revenue
          
           montant={item.montant}
-          
+          source={item.source}
+          // date={item.timestamp.toDate().toLocaleString()}
+          // timestamp={format(item.timestamp.toDate(), 'EEEE')}
         />
       )}
       ItemSeparatorComponent={FlatListItemSeparator}
@@ -108,7 +110,7 @@ const styles = {
       height:'100%',
       width:'100%', 
       backgroundColor:'white',
-     
+      paddingHorizontal: 10,
     },
     separator: {
       height:5,

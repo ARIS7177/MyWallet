@@ -10,14 +10,21 @@ import { getFirestore } from 'firebase/firestore';
 // Fonction de suppression de dépense dans le composant parent
 const supprimerDepense = async ( depenseId) => {
   try {
-    const FIREBASE_BD  = getFirestore(); // Obtenir l'instance de la base de données Firestore
-    const depenseRef = doc(collection(FIREBASE_BD , 'expenses'), depenseId); // Référence a la collection de la dépense
+    // Obtenir l'instance de la base de données Firestore
+    const FIREBASE_BD  = getFirestore(); 
 
-    await deleteDoc(depenseRef); // Supprimer le document correspondant a l'id de la dépense 
+// Référence a la collection de la dépense
+    const depenseRef = doc(collection(FIREBASE_BD , 'expenses'), depenseId); 
+
+// Supprimer le document correspondant a l'id de la dépense 
+    await deleteDoc(depenseRef); 
 
     console.log('La dépense a été supprimée avec succès !');
-    //toute autre action nécessaire après la suppression de la dépense, par exemple, mettre à jour l'état du composant parent ou recharger les données.
+    //toute autre action nécessaire après la suppression de la dépense, 
+    //par exemple, mettre à jour l'état du composant parent ou recharger les données.
+
   } catch (error) {
+
     console.error('Erreur lors de la suppression de la dépense :', error);
     // Gérer les erreurs de suppression de la dépense ici
   }
@@ -34,8 +41,6 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
  
   const [timestampValue, settimestampValue] = useState(timestamp);
  
-
- 
  
   const [modificationEffectuee, setModificationEffectuee] = useState(false);
 
@@ -46,19 +51,16 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
       
       <View style={styles.depenseContainer}>
 
-        <View style={{width:'30%',alignItems:'center',}}>
-            
+        <View style={{width:'50%',alignItems:'center',flexDirection: 'row',}}>
+             
            <Text style={styles.jour}>{timestampValue}</Text>
+          
            <Text style={styles.date}>{dateValue}</Text> 
-        
         </View>
 
              
         <View style={{width:'30%',alignItems:'flex-end',}}>
-        <TouchableOpacity  style={styles.boutonModifier} onPress={supprimerDepense}>
-              <Feather name="trash" size={20} color="black" />
-            </TouchableOpacity>
-
+        
               <Text style={styles.montant}>{montantValue}</Text>
             
         </View>
@@ -77,7 +79,7 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
       height:60,
       width:"100%",
       justifyContent:'space-between',
-      backgroundColor:'white',
+      backgroundColor:'#f6f5fd',
       
     },
     depenseSelectionnee: {
@@ -90,7 +92,8 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
       fontSize: 16,
       fontWeight: 'bold',
       color:'red',
-      alignSelf:'center'
+      alignSelf:'center',
+      padding: 10,
     },
     montantEditable: {
       flex: 1,
@@ -106,8 +109,8 @@ const Depense = ({ montant,timestamp,date,depenseId}:any) => {
       fontWeight: 'bold',
     },
     jour: {
-      fontSize: 14,
-      color: '#888',
+       fontSize: 16,
+      color: 'black',
       marginRight: 10,
       fontWeight: 'bold',
     },

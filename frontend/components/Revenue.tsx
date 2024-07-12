@@ -6,13 +6,13 @@ import Listedepense from '@/mesPages/Listedepense';
 
 
 
-const Revenue = ({ montant,timestamp, date }:any) => {
+const Revenue = ({ montant,source, date }:any) => {
   const [montantValue, setMontantValue] = useState(montant);
   
   const [dateValue, setDateValue] = useState(date);
  
  
-  const [timestampValue, settimestampValue] = useState(timestamp);
+  const [sourceValue, setsourceValue] = useState(source);
  
  
   const [modificationEffectuee, setModificationEffectuee] = useState(false);
@@ -23,14 +23,12 @@ const Revenue = ({ montant,timestamp, date }:any) => {
   };
     return (
       <View style={styles.container}>
-        <View style={{width:'30%',alignItems:'center',}}>
-        <Text style={styles.jour}>{timestampValue}</Text>
-        <Text style={styles.date}>{dateValue}</Text>
+        <View style={{width:'50%',}}>
+        <Text style={styles.source}>{sourceValue}</Text>
+        {/* <Text style={styles.date}>{dateValue}</Text> */}
         </View>
-        <View style={{width:'30%',alignItems:'flex-end',}}>
-        <TouchableOpacity onPress={ModifierRev } style={styles.boutonModifier}>
-          <Feather name="edit" size={20} color="black" />
-        </TouchableOpacity>
+        <View style={{width:'30%',alignItems:'center',padding: 10,}}>
+        
         <Text style={styles.montant}>{montant}</Text>
         </View>
       </View>
@@ -48,7 +46,8 @@ const Revenue = ({ montant,timestamp, date }:any) => {
       height:60,
       width:"100%",
       justifyContent:'space-between',
-      backgroundColor:'white',
+    
+      backgroundColor:'#f6f5fd',
       
     },
     montant: {
@@ -64,9 +63,9 @@ const Revenue = ({ montant,timestamp, date }:any) => {
       marginRight: 10,
       fontWeight: 'bold',
     },
-    jour: {
-      fontSize: 14,
-      color: '#888',
+    source: {
+      fontSize: 16,
+      color: 'black',
       marginRight: 10,
       fontWeight: 'bold',
     },
