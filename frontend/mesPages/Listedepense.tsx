@@ -11,7 +11,7 @@ import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 const Listedepense = () => {
  
   const FlatListItemSeparator = () => {
-    return <View style={styles.separator} />;
+    return <View style={styles.separator} />;sss
   };
   
   const [DATA,setData] = useState([ 
